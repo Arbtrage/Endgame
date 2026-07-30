@@ -17,8 +17,8 @@ export function DashboardHero() {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-96" />
+        <Skeleton className="h-7 w-64" />
+        <Skeleton className="h-4 w-96 max-w-full" />
       </div>
     );
   }
@@ -26,11 +26,15 @@ export function DashboardHero() {
   const name = profile?.name ?? session?.user.name ?? "Player";
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {name}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Ready for your next game on Endgame.
-      </p>
+    <div className="rounded-xl border border-border/60 bg-gradient-to-br from-muted/40 via-background to-background px-4 py-3 sm:px-5 sm:py-4">
+      <div className="space-y-1.5">
+        <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
+          Welcome back, {name}
+        </h1>
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+          Pick a mode below or replay a finished game to study your moves.
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,15 @@
 import { AiGameSetup } from "@/features/coaching/components/ai-game-setup";
-import { PageHeader } from "@/shared/components/page-header";
+import { SetupPlayPage } from "@/features/game/components/setup/setup-play-page";
+import { Shield } from "lucide-react";
 
 export default function AiPlayPage() {
   return (
-    <div>
-      <PageHeader
-        title="Play vs AI"
-        description="Choose a personality and play."
-      />
+    <SetupPlayPage
+      icon={Shield}
+      title="Play vs Hero"
+      description="Random superhero · AI personality · optional banter"
+    >
       <AiGameSetup />
-    </div>
+    </SetupPlayPage>
   );
 }

@@ -1,9 +1,20 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { GraduationCap, Swords } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ColorPicker } from "@/features/game/components/setup/color-picker";
+import {
+  SetupShell,
+  SetupSidebar,
+  SetupSplitLayout,
+} from "@/features/game/components/setup/setup-layout";
+import { SetupSection } from "@/features/game/components/setup/setup-section";
+import { COACH_SIDEBAR } from "@/features/game/components/setup/setup-hints";
+import { StrengthSlider } from "@/features/game/components/setup/strength-slider";
+import { TimeControlPicker } from "@/features/game/components/setup/time-control-picker";
 import {
   TIME_CONTROL_PRESETS,
   type PlayerColor,
@@ -12,8 +23,6 @@ import {
 import { createGame, getSettings } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Label } from "@/shared/ui/label";
 
 export function CoachGameSetup() {
   const router = useRouter();
@@ -41,66 +50,10 @@ export function CoachGameSetup() {
   const preset = TIME_CONTROL_PRESETS[timeControl];
 
   return (
-    <Card className="max-w-xl">
-      <CardHeader>
-        <CardTitle>Coach Mode</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <p className="text-sm text-muted-foreground">
-          Play against a Marvel villain while your AI coach explains key moments.
-        </p>
-
-        <div className="space-y-2">
-          <Label>Your color</Label>
-          <div className="flex flex-wrap gap-2">
-            {(["white", "black", "random"] as const).map((option) => (
-              <Button
-                key={option}
-                type="button"
-                variant={color === option ? "default" : "outline"}
-                onClick={() => setColor(option)}
-              >
-                {option.charAt(0).toUpperCase() + option.slice(1)}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="coach-strength">
-            Opponent threat level: {effectiveStrength}/20
-          </Label>
-          <input
-            id="coach-strength"
-            type="range"
-            min={1}
-            max={20}
-            value={effectiveStrength}
-            onChange={(event) => setStockfishLevel(Number(event.target.value))}
-            className="w-full"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Time control</Label>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(TIME_CONTROL_PRESETS) as TimeControlPreset[]).map(
-              (option) => (
-                <Button
-                  key={option}
-                  type="button"
-                  variant={timeControl === option ? "default" : "outline"}
-                  onClick={() => setTimeControl(option)}
-                >
-                  {TIME_CONTROL_PRESETS[option].label}
-                </Button>
-              ),
-            )}
-          </div>
-        </div>
-
+    <SetupShell
+      footer={
         <Button
-          className="w-full"
+          className="h-10 w-full text-base sm:max-w-xs"
           disabled={mutation.isPending}
           onClick={() =>
             mutation.mutate({
@@ -118,9 +71,47 @@ export function CoachGameSetup() {
             })
           }
         >
+          <Swords className="mr-2 size-4" />
           {mutation.isPending ? "Starting..." : "Start coached game"}
         </Button>
-      </CardContent>
-    </Card>
+      }
+    >
+      <SetupSplitLayout
+        sidebar={
+          <SetupSidebar
+            icon={GraduationCap}
+            title={COACH_SIDEBAR.title}
+            description={COACH_SIDEBAR.description}
+            tips={[...COACH_SIDEBAR.tips]}
+          />
+        }
+      >
+        <SetupSection
+          title="Your color"
+          description="Which side of the board you play."
+        >
+          <ColorPicker value={color} onChange={setColor} />
+        </SetupSection>
+
+        <SetupSection
+          title="Villain threat level"
+          description="Start lower if you want room to read coach notes."
+        >
+          <StrengthSlider
+            id="coach-strength"
+            label="Level"
+            value={effectiveStrength}
+            onChange={setStockfishLevel}
+          />
+        </SetupSection>
+
+        <SetupSection
+          title="Time control"
+          description="Unlimited works best while learning."
+        >
+          <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+        </SetupSection>
+      </SetupSplitLayout>
+    </SetupShell>
   );
 }

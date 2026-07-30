@@ -23,7 +23,7 @@ import { Separator } from "@/shared/ui/separator";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/play/computer", label: "vs Villains", icon: Monitor },
-  { href: "/play/ai", label: "vs AI Coach", icon: Swords },
+  { href: "/play/ai", label: "vs Heroes", icon: Swords },
   { href: "/play/coach", label: "Coach Mode", icon: GraduationCap },
   { href: "/analyze", label: "Analyze", icon: BarChart3 },
   { href: "/train", label: "Train", icon: GraduationCap },

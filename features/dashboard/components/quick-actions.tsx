@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { BarChart3, GraduationCap, Swords } from "lucide-react";
+import { BarChart3, GraduationCap, Shield, Skull } from "lucide-react";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -11,9 +10,21 @@ import {
 const actions = [
   {
     href: "/play/computer",
-    title: "Play",
-    description: "Face a random Marvel villain at your level",
-    icon: Swords,
+    title: "Vs Villain",
+    description: "Engine-backed Marvel foes",
+    icon: Skull,
+  },
+  {
+    href: "/play/ai",
+    title: "Vs Hero",
+    description: "Random superheroes with AI banter",
+    icon: Shield,
+  },
+  {
+    href: "/play/coach",
+    title: "Coach Mode",
+    description: "Live explanations while you play",
+    icon: GraduationCap,
   },
   {
     href: "/analyze",
@@ -21,28 +32,28 @@ const actions = [
     description: "Review games with engine insights",
     icon: BarChart3,
   },
-  {
-    href: "/train",
-    title: "Train",
-    description: "Personalized lessons from your weaknesses",
-    icon: GraduationCap,
-  },
 ];
 
 export function QuickActions() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {actions.map((action) => (
         <Link key={action.href} href={action.href}>
-          <Card className="h-full transition-colors hover:border-primary/40 hover:bg-card/80">
-            <CardHeader>
-              <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <action.icon className="size-5" />
+          <Card
+            size="sm"
+            className="h-full border-border/60 py-3 transition-all hover:border-primary/40 hover:bg-muted/20 hover:shadow-sm"
+          >
+            <CardHeader className="gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <action.icon className="size-4" />
               </div>
-              <CardTitle>{action.title}</CardTitle>
-              <CardDescription>{action.description}</CardDescription>
+              <div className="space-y-1.5">
+                <CardTitle className="text-sm leading-snug">{action.title}</CardTitle>
+                <CardDescription className="text-xs leading-relaxed">
+                  {action.description}
+                </CardDescription>
+              </div>
             </CardHeader>
-            <CardContent />
           </Card>
         </Link>
       ))}

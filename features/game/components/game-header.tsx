@@ -8,6 +8,7 @@ type GameHeaderProps = {
   stockfishLevel: number;
   modeLabel?: string;
   opponentTitle: string;
+  playingStyle?: string;
 };
 
 export function GameHeader({
@@ -16,10 +17,13 @@ export function GameHeader({
   stockfishLevel,
   modeLabel = "Computer",
   opponentTitle,
+  playingStyle,
 }: GameHeaderProps) {
-  const meta = modeLabel.includes("AI")
-    ? `Playing as ${playerColor}`
-    : `${playerColor} · Level ${stockfishLevel}/20`;
+  const meta = playingStyle
+    ? `${playerColor} · ${playingStyle} style`
+    : modeLabel.includes("AI") || modeLabel === "Hero Match"
+      ? `Playing as ${playerColor}`
+      : `${playerColor} · Level ${stockfishLevel}/20`;
 
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">

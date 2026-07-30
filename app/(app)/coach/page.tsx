@@ -1,14 +1,23 @@
 import { CoachChat } from "@/features/coaching/components/coach-chat";
-import { PageHeader } from "@/shared/components/page-header";
+import {
+  FeatureHero,
+  FeaturePage,
+  FeaturePanel,
+} from "@/shared/components/feature-page";
+import { MessageCircle } from "lucide-react";
 
 export default function CoachChatPage() {
   return (
-    <div>
-      <PageHeader
+    <FeaturePage className="max-w-4xl">
+      <FeatureHero
+        icon={MessageCircle}
         title="Coach Chat"
-        description="Ask your Endgame coach anything."
+        description="Ask your Endgame coach about openings, tactics, or games you've played."
+        hint="Open from any game with the coach button for position-aware answers."
       />
-      <CoachChat className="max-w-2xl" />
-    </div>
+      <FeaturePanel bodyClassName="flex min-h-0 flex-1 flex-col p-0">
+        <CoachChat className="h-full min-h-0 border-0 bg-transparent" />
+      </FeaturePanel>
+    </FeaturePage>
   );
 }

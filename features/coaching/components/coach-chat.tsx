@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bot, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CoachChatInput } from "@/features/coaching/components/coach-chat-input";
@@ -11,6 +12,13 @@ import {
 } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+
+const STARTER_PROMPTS = [
+  "Explain the Italian Game",
+  "How do I punish early queen moves?",
+  "What should I do in this endgame?",
+];
 
 type CoachChatProps = {
   context?: {
@@ -55,21 +63,63 @@ export function CoachChat({ context, className }: CoachChatProps) {
     },
   });
 
+  const send = (text: string) => {
+    if (!text.trim() || mutation.isPending) return;
+    mutation.mutate(text.trim());
+  };
+
   return (
-    <div className={cn("flex min-h-[420px] flex-col rounded-lg border border-border", className)}>
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col overflow-hidden",
+        className,
+      )}
+    >
+      <div className="flex shrink-0 items-center gap-3 border-b border-border/60 px-4 py-3 sm:px-5">
+        <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Bot className="size-4" aria-hidden />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-snug">Endgame Coach</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Ask about openings, tactics, or your games
+          </p>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-5">
         {historyQuery.isLoading ? (
           <p className="text-sm text-muted-foreground">Loading chat...</p>
         ) : messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Ask about openings, tactics, or your current position.
-          </p>
+          <div className="flex h-full min-h-48 flex-col items-center justify-center text-center">
+            <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Sparkles className="size-4" />
+            </div>
+            <p className="text-sm font-medium">Start a conversation</p>
+            <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-muted-foreground">
+              Try one of these prompts or ask anything about chess.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {STARTER_PROMPTS.map((prompt) => (
+                <Button
+                  key={prompt}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto whitespace-normal px-3 py-1.5 text-left text-xs leading-relaxed"
+                  onClick={() => send(prompt)}
+                >
+                  {prompt}
+                </Button>
+              ))}
+            </div>
+          </div>
         ) : (
           messages.map((msg) => (
             <div
               key={msg.id}
               className={cn(
-                "max-w-[85%] rounded-lg px-3 py-2 text-sm",
+                "max-w-[85%] rounded-xl px-3 py-2.5 text-sm leading-relaxed",
                 msg.role === "user"
                   ? "ml-auto bg-primary text-primary-foreground"
                   : "bg-muted",
@@ -84,15 +134,12 @@ export function CoachChat({ context, className }: CoachChatProps) {
         ) : null}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="shrink-0 border-t border-border/60 bg-muted/10 px-4 py-3 sm:px-5">
         <CoachChatInput
           value={message}
           onChange={setMessage}
           disabled={mutation.isPending}
-          onSubmit={() => {
-            if (!message.trim()) return;
-            mutation.mutate(message.trim());
-          }}
+          onSubmit={() => send(message)}
         />
       </div>
     </div>

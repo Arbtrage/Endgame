@@ -2,18 +2,16 @@
 
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { CoachFab } from "@/features/coaching/components/coach-fab";
 import { Sidebar } from "@/shared/components/sidebar";
 import { APP_NAME } from "@/shared/constants/brand";
 import { Button } from "@/shared/ui/button";
 import { useUIStore } from "@/shared/hooks/use-ui-store";
-import { cn } from "@/shared/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { sidebarOpen, setSidebarOpen } = useUIStore();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-dvh overflow-hidden bg-background">
       <div className="hidden lg:block">
         <Sidebar className="fixed inset-y-0 left-0 z-40" />
       </div>
@@ -30,8 +28,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       ) : null}
 
-      <div className="flex min-h-screen flex-1 flex-col lg:pl-60">
-        <header className="flex h-16 items-center border-b border-border px-4 lg:hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:pl-60">
+        <header className="flex h-14 shrink-0 items-center border-b border-border px-4 lg:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -44,10 +42,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {APP_NAME}
           </Link>
         </header>
-        <main className={cn("flex-1 px-4 py-6 sm:px-6 lg:px-8")}>{children}</main>
+        <main className="min-h-0 flex-1 overflow-hidden px-4 py-4 sm:px-6 lg:py-5 lg:px-8">
+          {children}
+        </main>
       </div>
-
-      <CoachFab />
     </div>
   );
 }

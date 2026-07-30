@@ -19,15 +19,16 @@ import type { PlayerColor } from "@/features/game/types";
 
 type GameOverDialogProps = {
   open: boolean;
+  onOpenChange: (open: boolean) => void;
   lifecycle: GameLifecycleState;
   playerColor: PlayerColor;
   moveCount: number;
-  gameId?: string | null;
   onPlayAgain?: () => void;
 };
 
 export function GameOverDialog({
   open,
+  onOpenChange,
   lifecycle,
   playerColor,
   moveCount,
@@ -36,7 +37,7 @@ export function GameOverDialog({
   const resultLabel = getResultLabel(lifecycle.result, playerColor);
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Game over</DialogTitle>
@@ -50,22 +51,29 @@ export function GameOverDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
+          <Button type="button" onClick={() => onOpenChange(false)}>
+            View replay
+          </Button>
           {onPlayAgain ? (
-            <Button onClick={onPlayAgain}>Play again</Button>
+            <Button type="button" variant="outline" onClick={onPlayAgain}>
+              Play again
+            </Button>
           ) : (
-            <Link
-              href="/play/computer"
-              className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground"
+            <Button
+              render={<Link href="/play/computer" />}
+              nativeButton={false}
+              variant="outline"
             >
               Play again
-            </Link>
+            </Button>
           )}
-          <Link
-            href="/dashboard"
-            className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium shadow-xs"
+          <Button
+            render={<Link href="/dashboard" />}
+            nativeButton={false}
+            variant="ghost"
           >
             Dashboard
-          </Link>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

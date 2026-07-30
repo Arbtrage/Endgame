@@ -7,16 +7,20 @@ import { PERSONALITIES } from "@/features/coaching/types/personalities";
 type PersonalitySelectorProps = {
   value: string;
   onChange: (personalityId: string) => void;
+  label?: string;
+  showLabel?: boolean;
 };
 
 export function PersonalitySelector({
   value,
   onChange,
+  label = "Playing style",
+  showLabel = true,
 }: PersonalitySelectorProps) {
   return (
-    <div className="space-y-2">
-      <Label>AI personality</Label>
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div className="space-y-3">
+      {showLabel ? <Label>{label}</Label> : null}
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {PERSONALITIES.map((personality) => (
           <PersonalityCard
             key={personality.id}

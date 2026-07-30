@@ -1,10 +1,23 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Swords } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PersonalitySelector } from "@/features/coaching/components/personality-selector";
+import { ColorPicker } from "@/features/game/components/setup/color-picker";
+import {
+  SetupCallout,
+  SetupQuickRow,
+  SetupShell,
+} from "@/features/game/components/setup/setup-layout";
+import { SetupSection } from "@/features/game/components/setup/setup-section";
+import {
+  HERO_CALLOUT,
+  SAMPLE_HEROES,
+} from "@/features/game/components/setup/setup-hints";
+import { TimeControlPicker } from "@/features/game/components/setup/time-control-picker";
 import {
   TIME_CONTROL_PRESETS,
   type PlayerColor,
@@ -13,8 +26,6 @@ import {
 import { createGame, getSettings } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Label } from "@/shared/ui/label";
 
 export function AiGameSetup() {
   const router = useRouter();
@@ -42,52 +53,10 @@ export function AiGameSetup() {
   const preset = TIME_CONTROL_PRESETS[timeControl];
 
   return (
-    <Card className="max-w-3xl">
-      <CardHeader>
-        <CardTitle>Play vs AI</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>Your color</Label>
-          <div className="flex flex-wrap gap-2">
-            {(["white", "black", "random"] as const).map((option) => (
-              <Button
-                key={option}
-                type="button"
-                variant={color === option ? "default" : "outline"}
-                onClick={() => setColor(option)}
-              >
-                {option.charAt(0).toUpperCase() + option.slice(1)}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <PersonalitySelector
-          value={effectivePersonality}
-          onChange={setPersonality}
-        />
-
-        <div className="space-y-2">
-          <Label>Time control</Label>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(TIME_CONTROL_PRESETS) as TimeControlPreset[]).map(
-              (option) => (
-                <Button
-                  key={option}
-                  type="button"
-                  variant={timeControl === option ? "default" : "outline"}
-                  onClick={() => setTimeControl(option)}
-                >
-                  {TIME_CONTROL_PRESETS[option].label}
-                </Button>
-              ),
-            )}
-          </div>
-        </div>
-
+    <SetupShell
+      footer={
         <Button
-          className="w-full"
+          className="h-10 w-full text-base sm:max-w-xs"
           disabled={mutation.isPending}
           onClick={() =>
             mutation.mutate({
@@ -105,9 +74,40 @@ export function AiGameSetup() {
             })
           }
         >
-          {mutation.isPending ? "Starting..." : "Start game"}
+          <Swords className="mr-2 size-4" />
+          {mutation.isPending ? "Summoning hero..." : "Start hero match"}
         </Button>
-      </CardContent>
-    </Card>
+      }
+    >
+      <div className="flex flex-col gap-6 p-5 sm:p-6">
+        <SetupQuickRow>
+          <SetupSection title="Your color" description="Side you control.">
+            <ColorPicker value={color} onChange={setColor} />
+          </SetupSection>
+
+          <SetupSection title="Time control" description="Optional clock.">
+            <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+          </SetupSection>
+        </SetupQuickRow>
+
+        <SetupCallout
+          icon={HERO_CALLOUT.icon}
+          title={HERO_CALLOUT.title}
+          body={HERO_CALLOUT.body}
+          badges={[...SAMPLE_HEROES]}
+        />
+
+        <SetupSection
+          title="Playing style"
+          description="Difficulty and personality — pick how your hero approaches the game."
+        >
+          <PersonalitySelector
+            value={effectivePersonality}
+            onChange={setPersonality}
+            showLabel={false}
+          />
+        </SetupSection>
+      </div>
+    </SetupShell>
   );
 }

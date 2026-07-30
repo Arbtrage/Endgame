@@ -14,20 +14,25 @@ export function RecentGames() {
   });
 
   if (isLoading) {
-    return <Skeleton className="h-32 w-full" />;
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+      </div>
+    );
   }
 
   if (!data?.length) {
     return (
       <EmptyState
         title="No games yet"
-        description="Play your first game against a villain to see your history here."
+        description="Start a match against a villain or hero — your history will show up here for replay."
       />
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
       {data.map((game) => (
         <GameCard key={game.id} game={game} />
       ))}

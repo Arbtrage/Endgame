@@ -1,14 +1,15 @@
 import { CoachGameSetup } from "@/features/coaching/components/coach-game-setup";
-import { PageHeader } from "@/shared/components/page-header";
+import { SetupPlayPage } from "@/features/game/components/setup/setup-play-page";
+import { GraduationCap } from "lucide-react";
 
 export default function CoachPlayPage() {
   return (
-    <div>
-      <PageHeader
-        title="Coach Mode"
-        description="Play with live AI coaching."
-      />
+    <SetupPlayPage
+      icon={GraduationCap}
+      title="Coach Mode"
+      description="Villain opponent · live explanations at key moments"
+    >
       <CoachGameSetup />
-    </div>
+    </SetupPlayPage>
   );
 }

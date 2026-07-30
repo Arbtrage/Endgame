@@ -1,14 +1,14 @@
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
+import { PlaceholderPage } from "@/shared/components/placeholder-page";
+import { GraduationCap } from "lucide-react";
 
 export default function TrainPage() {
   return (
-    <div>
-      <PageHeader title="Train" description="Personalized lessons from your weaknesses." />
-      <EmptyState
-        title="Coming in Phase 4"
-        description="AI-generated training lessons arrive in Phase 4."
-      />
-    </div>
+    <PlaceholderPage
+      icon={GraduationCap}
+      title="Train"
+      description="Personalized lessons built from your weaknesses and recent games."
+      emptyTitle="Coming soon"
+      emptyDescription="AI-generated training lessons arrive in a future update."
+    />
   );
 }

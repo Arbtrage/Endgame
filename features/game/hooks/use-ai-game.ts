@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getPersonality } from "@/features/coaching/types/personalities";
+import { getMarvelSuperheroForGame } from "@/features/game/constants/marvel-superheroes";
 import { generatePgn } from "@/features/game/engine/pgn";
 import {
   resolveGameResult,
@@ -49,11 +50,13 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
   const orientation = useBoardStore((state) => state.orientation);
   const setOrientation = useBoardStore((state) => state.setOrientation);
   const [loading, setLoading] = useState(true);
+  const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [opponentComment, setOpponentComment] = useState<string | null>(null);
   const processingRef = useRef(false);
   const { persistMove, syncInProgressRef } = useMoveSync(gameId, persist);
 
   const personality = getPersonality(aiPersonality ?? "intermediate");
+  const opponentName = getMarvelSuperheroForGame(gameId);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +75,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
         });
         setOrientation(game.playerColor as "white" | "black");
         if (game.status === "COMPLETED") {
+          setLoadedAsCompleted(true);
           setPhase("game_over");
           setLifecycle({
             phase: "game_over",
@@ -343,7 +347,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
   const checkSquare = inCheck ? chessGame.getKingSquare() : null;
 
   const canDrag =
-    phase !== "game_over" &&
+    !lifecycle.result &&
     !opponentThinking &&
     !pendingPromotion &&
     isPlayersTurn &&
@@ -351,6 +355,8 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
 
   return {
     loading,
+    loadedAsCompleted,
+    isFinished: !!lifecycle.result,
     fen: chessGame.getFen(),
     orientation,
     phase,
@@ -359,7 +365,8 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     reviewIndex,
     opponentThinking,
     opponentComment,
-    personalityName: personality.name,
+    opponentName,
+    playingStyle: personality.name,
     pendingPromotion,
     playerColor,
     inCheck,
@@ -372,6 +379,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     handlePromotion,
     handleResign,
     goToMove,
+    exitReview,
     flipBoard: () =>
       useBoardStore
         .getState()

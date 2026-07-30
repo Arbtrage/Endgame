@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { GameControls } from "@/features/game/components/game-controls";
+import { GameReplayControls } from "@/features/game/components/game-replay-controls";
 import { MoveList } from "@/features/game/components/move-list";
 import {
   Card,
@@ -19,7 +20,9 @@ type GameSidebarPanelProps = {
   onSelectMove: (index: number) => void;
   onResign: () => void;
   onFlipBoard: () => void;
+  onGoLive?: () => void;
   disabled?: boolean;
+  isFinished?: boolean;
   topSlot?: ReactNode;
 };
 
@@ -29,7 +32,9 @@ export function GameSidebarPanel({
   onSelectMove,
   onResign,
   onFlipBoard,
+  onGoLive,
   disabled = false,
+  isFinished = false,
   topSlot,
 }: GameSidebarPanelProps) {
   const movePairs = Math.ceil(moves.length / 2);
@@ -39,11 +44,22 @@ export function GameSidebarPanel({
       <CardHeader className="shrink-0 border-b py-3">
         <CardTitle className="text-base">Moves</CardTitle>
         <CardDescription>
-          {moves.length === 0
-            ? "Make the first move on the board"
-            : `${movePairs} full ${movePairs === 1 ? "move" : "moves"}`}
+          {isFinished
+            ? "Replay the game move by move"
+            : moves.length === 0
+              ? "Make the first move on the board"
+              : `${movePairs} full ${movePairs === 1 ? "move" : "moves"}`}
         </CardDescription>
       </CardHeader>
+
+      {isFinished ? (
+        <GameReplayControls
+          moveCount={moves.length}
+          activeIndex={activeIndex}
+          onSelectMove={onSelectMove}
+          onGoLive={onGoLive ?? (() => onSelectMove(moves.length - 1))}
+        />
+      ) : null}
 
       {topSlot ? (
         <div className="shrink-0 border-b px-4 py-3">{topSlot}</div>
@@ -62,6 +78,7 @@ export function GameSidebarPanel({
           onResign={onResign}
           onFlipBoard={onFlipBoard}
           disabled={disabled}
+          hideResign={isFinished}
         />
       </CardFooter>
     </Card>

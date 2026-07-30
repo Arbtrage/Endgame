@@ -1,14 +1,14 @@
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
+import { PlaceholderPage } from "@/shared/components/placeholder-page";
+import { TrendingUp } from "lucide-react";
 
 export default function ProgressPage() {
   return (
-    <div>
-      <PageHeader title="Progress" description="Track accuracy, streaks, and weekly reports." />
-      <EmptyState
-        title="Coming in Phase 5"
-        description="Progress charts and weekly AI reports arrive in Phase 5."
-      />
-    </div>
+    <PlaceholderPage
+      icon={TrendingUp}
+      title="Progress"
+      description="Track accuracy, streaks, and weekly reports as you improve."
+      emptyTitle="Coming soon"
+      emptyDescription="Progress charts and weekly AI reports arrive in a future update."
+    />
   );
 }

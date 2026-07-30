@@ -13,5 +13,9 @@ export default async function AppLayout({
     redirect("/auth/sign-in");
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <div className="h-dvh overflow-hidden">
+      <AppShell>{children}</AppShell>
+    </div>
+  );
 }

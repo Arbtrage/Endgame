@@ -5,6 +5,7 @@ import { CoachPanel } from "@/features/coaching/components/coach-panel";
 import { ChessPlayArea } from "@/features/game/components/chess-play-area";
 import { GameHeader } from "@/features/game/components/game-header";
 import { GameOverDialog } from "@/features/game/components/game-over-dialog";
+import { GameResultBanner } from "@/features/game/components/game-result-banner";
 import { GamePlayLayout } from "@/features/game/components/game-play-layout";
 import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton";
 import { GameSidebarPanel } from "@/features/game/components/game-sidebar-panel";
@@ -14,6 +15,7 @@ import {
   getVillainThinkingLabel,
 } from "@/features/game/constants/marvel-villains";
 import { useCoachGame } from "@/features/game/hooks/use-coach-game";
+import { useGameOverUi } from "@/features/game/hooks/use-game-over-ui";
 import { useMoveSounds } from "@/features/game/hooks/use-move-sounds";
 import { usePlayerDisplayName } from "@/features/game/hooks/use-player-display-name";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -37,6 +39,10 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
   const game = useCoachGame({ gameId, persist: true });
   const playerName = usePlayerDisplayName();
   const opponentName = getMarvelVillainForGame(gameId);
+  const gameOverUi = useGameOverUi({
+    isFinished: game.isFinished,
+    loadedAsCompleted: game.loadedAsCompleted,
+  });
   useMoveSounds(game.loading ? [] : game.moves);
 
   if (game.loading) {
@@ -55,6 +61,16 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
             modeLabel="Coach Mode"
             opponentTitle={opponentName}
           />
+        }
+        banner={
+          gameOverUi.showResultBanner ? (
+            <GameResultBanner
+              lifecycle={game.lifecycle}
+              playerColor={game.playerColor}
+              moveCount={game.moves.length}
+              onShowSummary={gameOverUi.showDialog}
+            />
+          ) : undefined
         }
         board={
           <ChessPlayArea
@@ -94,7 +110,8 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
             onSelectMove={game.goToMove}
             onResign={game.handleResign}
             onFlipBoard={game.flipBoard}
-            disabled={game.phase === "game_over"}
+            onGoLive={game.exitReview}
+            isFinished={game.isFinished}
           />
         }
         extraColumn={
@@ -117,11 +134,13 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
       />
 
       <GameOverDialog
-        open={game.phase === "game_over"}
+        open={gameOverUi.dialogOpen}
+        onOpenChange={(open) => {
+          if (!open) gameOverUi.dismissDialog();
+        }}
         lifecycle={game.lifecycle}
         playerColor={game.playerColor}
         moveCount={game.moves.length}
-        gameId={gameId}
       />
     </div>
   );

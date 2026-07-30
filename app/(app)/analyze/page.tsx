@@ -1,14 +1,14 @@
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
+import { PlaceholderPage } from "@/shared/components/placeholder-page";
+import { BarChart3 } from "lucide-react";
 
 export default function AnalyzePage() {
   return (
-    <div>
-      <PageHeader title="Analyze" description="Review games with engine-backed insights." />
-      <EmptyState
-        title="Coming in Phase 4"
-        description="Game analysis and evaluation graphs arrive in Phase 4."
-      />
-    </div>
+    <PlaceholderPage
+      icon={BarChart3}
+      title="Analyze"
+      description="Review games with engine-backed insights and evaluation graphs."
+      emptyTitle="Coming soon"
+      emptyDescription="Game analysis and evaluation graphs arrive in a future update."
+    />
   );
 }

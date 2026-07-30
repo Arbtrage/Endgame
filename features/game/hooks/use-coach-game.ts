@@ -57,6 +57,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
   const orientation = useBoardStore((state) => state.orientation);
   const setOrientation = useBoardStore((state) => state.setOrientation);
   const [loading, setLoading] = useState(true);
+  const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
   const [coachAutoExplain, setCoachAutoExplain] = useState(true);
   const [explanations, setExplanations] = useState<CoachExplanation[]>([]);
@@ -87,6 +88,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         setOrientation(game.playerColor as "white" | "black");
         setCoachAutoExplain(settings?.coachAutoExplain ?? true);
         if (game.status === "COMPLETED") {
+          setLoadedAsCompleted(true);
           setPhase("game_over");
           setLifecycle({
             phase: "game_over",
@@ -464,7 +466,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
   const checkSquare = inCheck ? chessGame.getKingSquare() : null;
 
   const canDrag =
-    phase !== "game_over" &&
+    !lifecycle.result &&
     !opponentThinking &&
     !pendingPromotion &&
     isPlayersTurn &&
@@ -472,6 +474,8 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
 
   return {
     loading,
+    loadedAsCompleted,
+    isFinished: !!lifecycle.result,
     engineReady,
     fen: chessGame.getFen(),
     orientation,
@@ -497,6 +501,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
     handlePromotion,
     handleResign,
     goToMove,
+    exitReview,
     flipBoard: () =>
       useBoardStore
         .getState()

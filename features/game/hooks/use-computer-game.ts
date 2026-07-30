@@ -50,6 +50,7 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
   const orientation = useBoardStore((state) => state.orientation);
   const setOrientation = useBoardStore((state) => state.setOrientation);
   const [loading, setLoading] = useState(true);
+  const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
   const processingRef = useRef(false);
   const { persistMove, syncInProgressRef } = useMoveSync(gameId, persist);
@@ -70,6 +71,7 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
           });
           setOrientation(game.playerColor as "white" | "black");
           if (game.status === "COMPLETED") {
+            setLoadedAsCompleted(true);
             setPhase("game_over");
             setLifecycle({
               phase: "game_over",
@@ -375,7 +377,7 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
   const checkSquare = inCheck ? chessGame.getKingSquare() : null;
 
   const canDrag =
-    phase !== "game_over" &&
+    !lifecycle.result &&
     !opponentThinking &&
     !pendingPromotion &&
     isPlayersTurn &&
@@ -383,6 +385,8 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
 
   return {
     loading,
+    loadedAsCompleted,
+    isFinished: !!lifecycle.result,
     engineReady,
     engineError,
     fen: chessGame.getFen(),
@@ -405,6 +409,7 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
     handlePromotion,
     handleResign,
     goToMove,
+    exitReview,
     flipBoard: () =>
       setOrientation(orientation === "white" ? "black" : "white"),
   };

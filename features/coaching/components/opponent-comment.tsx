@@ -6,14 +6,17 @@ import { cn } from "@/shared/lib/utils";
 type OpponentCommentProps = {
   comment: string;
   personalityName?: string;
+  speakerName?: string;
   className?: string;
 };
 
 export function OpponentComment({
   comment,
   personalityName,
+  speakerName,
   className,
 }: OpponentCommentProps) {
+  const name = speakerName ?? personalityName;
   return (
     <div
       className={cn(
@@ -21,10 +24,8 @@ export function OpponentComment({
         className,
       )}
     >
-      {personalityName ? (
-        <p className="mb-1 text-xs font-medium text-muted-foreground">
-          {personalityName}
-        </p>
+      {name ? (
+        <p className="mb-1 text-xs font-medium text-muted-foreground">{name}</p>
       ) : null}
       <p>{comment}</p>
     </div>
