@@ -1,0 +1,47 @@
+import { z } from "zod";
+import { PERSONALITY_IDS } from "@/shared/ai/personalities";
+
+export const aiPersonalitySchema = z.enum(PERSONALITY_IDS);
+
+export const explainMomentSchema = z.object({
+  gameId: z.string().uuid(),
+  fen: z.string().min(1),
+  moves: z.array(z.string()),
+  moveNumber: z.number().int().positive(),
+  san: z.string().min(1),
+  momentType: z.enum([
+    "blunder",
+    "brilliant",
+    "opening_exit",
+    "endgame_entry",
+    "check",
+    "material_change",
+  ]),
+  evalBefore: z.number(),
+  evalAfter: z.number(),
+  bestMove: z.string().optional(),
+  classification: z.string().optional(),
+});
+
+export const aiMoveSchema = z.object({
+  fen: z.string().min(1),
+  moves: z.array(z.string()),
+  personality: aiPersonalitySchema,
+  eval: z.number().optional(),
+});
+
+export const coachChatSchema = z.object({
+  message: z.string().min(1).max(2000),
+  sessionId: z.string().uuid().optional(),
+  context: z
+    .object({
+      fen: z.string().optional(),
+      gameId: z.string().uuid().optional(),
+      mode: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const chatHistoryQuerySchema = z.object({
+  sessionId: z.string().uuid().optional(),
+});

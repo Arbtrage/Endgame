@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GameMode {
+  COMPUTER
+  AI_OPPONENT
+  COACH
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum GameResult {
+  WHITE_WIN
+  BLACK_WIN
+  DRAW
+  ABANDONED
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String?
+  email              String   @unique
+  emailVerified      Boolean  @default(false)
+  image              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  skillEstimate      Int?
+  onboardingComplete Boolean  @default(false)
+
+  accounts Account[]
+  sessions Session[]
+  settings UserSettings?
+  games        Game[]
+  chatSessions ChatSession[]
+
+  @@map("users")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+model UserSettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  boardTheme            String   @default("classic")
+  pieceSet              String   @default("standard")
+  soundEnabled          Boolean  @default(true)
+  defaultStockfishLevel Int      @default(5)
+  defaultAiPersonality  String   @default("intermediate")
+  coachAutoExplain      Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model Game {
+  id                   String      @id @default(cuid())
+  userId               String
+  mode                 GameMode
+  status               GameStatus  @default(IN_PROGRESS)
+  result               GameResult?
+  resultReason         String?
+  playerColor          String
+  stockfishLevel       Int?
+  aiPersonality        String?
+  timeControlInitial   Int?
+  timeControlIncrement Int?
+  pgn                  String?
+  finalFen             String?
+  moveCount            Int         @default(0)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  completedAt          DateTime?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moves        Move[]
+  coachMoments CoachMoment[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, status])
+  @@map("games")
+}
+
+model Move {
+  id         String   @id @default(cuid())
+  gameId     String
+  moveNumber Int
+  san        String
+  uci        String
+  fen        String
+  color      String
+  createdAt  DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, moveNumber])
+  @@index([gameId])
+  @@map("moves")
+}
+
+model CoachMoment {
+  id          String   @id @default(cuid())
+  gameId      String
+  moveNumber  Int
+  momentType  String
+  evalBefore  Float
+  evalAfter   Float
+  explanation String
+  createdAt   DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@map("coach_moments")
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  context   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String
+  content   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
