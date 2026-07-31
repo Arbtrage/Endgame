@@ -51,3 +51,8 @@ export const hintRequestSchema = z.object({
   exerciseIndex: z.number().int().nonnegative(),
   hintLevel: z.number().int().min(1).max(3),
 });
+
+export const verifyExerciseSchema = z.object({
+  exerciseIndex: z.number().int().nonnegative(),
+  uci: z.string().min(4).max(5),
+});

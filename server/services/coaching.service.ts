@@ -229,66 +229,83 @@ export const coachingService = {
     };
   },
 
-  async chat(
+  async listChatSessions(
     userId: string,
-    input: {
-      message: string;
-      sessionId?: string;
-      context?: {
-        fen?: string;
-        gameId?: string;
-        mode?: string;
-      };
+    filters: { page: number; pageSize: number },
+  ) {
+    const [sessions, total] = await chatRepository.listSessions(
+      userId,
+      filters,
+    );
+
+    return {
+      data: sessions
+        .filter((session) => session._count.messages > 0)
+        .map((session) => {
+        const preview = session.messages[0]?.content ?? "";
+        return {
+          id: session.id,
+          preview:
+            preview.length > 72 ? `${preview.slice(0, 72).trim()}…` : preview,
+          messageCount: session._count.messages,
+          createdAt: session.createdAt.toISOString(),
+          updatedAt: session.updatedAt.toISOString(),
+        };
+      }),
+      meta: {
+        page: filters.page,
+        pageSize: filters.pageSize,
+        total,
+      },
+    };
+  },
+
+  async createChatSession(
+    userId: string,
+    context?: {
+      fen?: string;
+      gameId?: string;
+      mode?: string;
     },
   ) {
-    ensureAIConfigured();
+    const session = await chatRepository.createSession(userId, context);
+    return { sessionId: session.id };
+  },
 
-    let session;
-    if (input.sessionId) {
-      session = await chatRepository.findSession(input.sessionId, userId);
+  async resolveChatSession(
+    userId: string,
+    sessionId?: string,
+    context?: {
+      fen?: string;
+      gameId?: string;
+      mode?: string;
+    },
+  ) {
+    if (sessionId) {
+      const session = await chatRepository.findSession(sessionId, userId);
       if (!session) {
         throw new ApiError("NOT_FOUND", "Chat session not found", 404);
       }
-    } else {
-      session = await chatRepository.findLatestSession(userId);
-      if (!session) {
-        session = await chatRepository.createSession(userId, input.context);
-        session = { ...session, messages: [] };
+      if (context) {
+        await chatRepository.updateSessionContext(session.id, context);
       }
+      return session;
     }
 
-    if (input.context) {
-      await chatRepository.updateSessionContext(session.id, input.context);
-    }
+    const created = await chatRepository.createSession(userId, context);
+    return { ...created, messages: [] };
+  },
 
-    const history = session.messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    }));
-
+  async persistChatMessage(
+    sessionId: string,
+    role: "user" | "assistant",
+    content: string,
+  ) {
     await chatRepository.addMessage({
-      sessionId: session.id,
-      role: "user",
-      content: input.message,
+      sessionId,
+      role,
+      content,
     });
-
-    const provider = getAIProvider();
-    const response = await provider.chat({
-      message: input.message,
-      history,
-      context: input.context,
-    });
-
-    await chatRepository.addMessage({
-      sessionId: session.id,
-      role: "assistant",
-      content: response.content,
-    });
-
-    return {
-      sessionId: session.id,
-      content: response.content,
-    };
   },
 
   async getChatHistory(userId: string, sessionId?: string) {

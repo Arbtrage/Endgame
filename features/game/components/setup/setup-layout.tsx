@@ -6,10 +6,24 @@ import { FeaturePanel } from "@/shared/components/feature-page";
 type SetupShellProps = {
   children: ReactNode;
   footer: ReactNode;
+  embedded?: boolean;
 };
 
 /** Full-height setup panel with sticky start action. */
-export function SetupShell({ children, footer }: SetupShellProps) {
+export function SetupShell({ children, footer, embedded = false }: SetupShellProps) {
+  if (embedded) {
+    return (
+      <div className="flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card/40">
+        <div className="max-h-[min(60vh,520px)] overflow-y-auto">{children}</div>
+        {footer ? (
+          <div className="shrink-0 border-t border-border/60 bg-muted/20 p-4">
+            {footer}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <FeaturePanel footer={footer} bodyClassName="flex min-h-0 flex-1 flex-col p-0">
       <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
@@ -20,13 +34,28 @@ export function SetupShell({ children, footer }: SetupShellProps) {
 type SetupSplitLayoutProps = {
   sidebar: ReactNode;
   children: ReactNode;
+  embedded?: boolean;
 };
 
 /** Sidebar + form — used by Villain and Coach modes. */
-export function SetupSplitLayout({ sidebar, children }: SetupSplitLayoutProps) {
+export function SetupSplitLayout({
+  sidebar,
+  children,
+  embedded = false,
+}: SetupSplitLayoutProps) {
   return (
-    <div className="flex min-h-0 flex-col lg:flex-row">
-      <aside className="shrink-0 border-b border-border/60 bg-muted/15 p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80">
+    <div
+      className={cn(
+        "flex min-h-0 flex-col",
+        !embedded && "lg:flex-row",
+      )}
+    >
+      <aside
+        className={cn(
+          "shrink-0 border-b border-border/60 bg-muted/15 p-5",
+          !embedded && "lg:w-72 lg:border-b-0 lg:border-r xl:w-80",
+        )}
+      >
         {sidebar}
       </aside>
       <div className="flex min-h-0 flex-1 flex-col gap-6 p-5 sm:p-6">{children}</div>

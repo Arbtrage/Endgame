@@ -225,18 +225,43 @@ export function explainMoment(data: {
   });
 }
 
-export function sendCoachChat(data: {
-  message: string;
-  sessionId?: string;
-  context?: {
-    fen?: string;
-    gameId?: string;
-    mode?: string;
-  };
+export type CoachChatSessionSummary = {
+  id: string;
+  preview: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function listCoachChatSessions(params?: {
+  page?: number;
+  pageSize?: number;
 }) {
-  return fetchJson<{ sessionId: string; content: string }>("/api/coach/chat", {
+  const search = new URLSearchParams();
+  if (params?.page) search.set("page", String(params.page));
+  if (params?.pageSize) search.set("pageSize", String(params.pageSize));
+  const query = search.toString();
+  const response = await fetch(
+    `/api/coach/chat/sessions${query ? `?${query}` : ""}`,
+  );
+  const body = await response.json();
+  if (!response.ok) {
+    throw new Error(body?.error?.message ?? "Request failed");
+  }
+  return {
+    data: body.data as CoachChatSessionSummary[],
+    meta: body.meta as { page: number; pageSize: number; total: number },
+  };
+}
+
+export function createCoachChatSession(context?: {
+  fen?: string;
+  gameId?: string;
+  mode?: string;
+}) {
+  return fetchJson<{ sessionId: string }>("/api/coach/chat/sessions", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ context }),
   });
 }
 
@@ -410,6 +435,19 @@ export function requestHint(
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+export function verifyExerciseMove(
+  lessonId: string,
+  data: { exerciseIndex: number; uci: string },
+) {
+  return fetchJson<{ correct: boolean }>(
+    `/api/training/lessons/${lessonId}/verify`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
 }
 
 export type LessonDetail = {

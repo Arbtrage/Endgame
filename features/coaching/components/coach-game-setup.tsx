@@ -56,12 +56,14 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
   });
 
   const preset = TIME_CONTROL_PRESETS[timeControl];
+  const embedded = Boolean(onSuccess);
 
   return (
     <SetupShell
+      embedded={embedded}
       footer={
         <Button
-          className="h-10 w-full text-base sm:max-w-xs"
+          className="h-11 w-full text-base"
           disabled={mutation.isPending}
           onClick={() =>
             mutation.mutate({
@@ -85,6 +87,7 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
       }
     >
       <SetupSplitLayout
+        embedded={embedded}
         sidebar={
           <SetupSidebar
             icon={GraduationCap}

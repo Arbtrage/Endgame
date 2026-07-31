@@ -40,7 +40,7 @@ export function GameOverDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false}>
+      <DialogContent showCloseButton={false} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Game over</DialogTitle>
           <DialogDescription>
@@ -52,8 +52,8 @@ export function GameOverDialog({
             {moveCount} moves
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:justify-start">
-          <Button type="button" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="grid grid-cols-2 gap-2">
+          <Button type="button" className="w-full" onClick={() => onOpenChange(false)}>
             View replay
           </Button>
           {gameId ? (
@@ -61,12 +61,18 @@ export function GameOverDialog({
               render={<Link href={`/analyze/${gameId}`} />}
               nativeButton={false}
               variant="secondary"
+              className="w-full"
             >
               Analyze
             </Button>
           ) : null}
           {onPlayAgain ? (
-            <Button type="button" variant="outline" onClick={onPlayAgain}>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={onPlayAgain}
+            >
               Play again
             </Button>
           ) : (
@@ -74,6 +80,7 @@ export function GameOverDialog({
               render={<Link href="/play/computer" />}
               nativeButton={false}
               variant="outline"
+              className="w-full"
             >
               Play again
             </Button>
@@ -82,6 +89,7 @@ export function GameOverDialog({
             render={<Link href="/dashboard" />}
             nativeButton={false}
             variant="ghost"
+            className="w-full"
           >
             Dashboard
           </Button>

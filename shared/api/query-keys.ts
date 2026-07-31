@@ -10,6 +10,8 @@ export const queryKeys = {
   },
   coach: {
     all: ["coach"] as const,
+    sessions: (filters?: Record<string, string | number | undefined>) =>
+      ["coach", "sessions", filters ?? {}] as const,
     chat: (sessionId: string) => ["coach", "chat", sessionId] as const,
   },
   analysis: {

@@ -327,4 +327,31 @@ export const trainingService = {
       explanation: hintLevel >= 3 ? exercise.explanation : undefined,
     };
   },
+
+  async verifyExercise(
+    userId: string,
+    lessonId: string,
+    exerciseIndex: number,
+    uci: string,
+  ) {
+    const lesson = await lessonRepository.findById(lessonId);
+    if (!lesson || lesson.userId !== userId) {
+      throw new ApiError("NOT_FOUND", "Lesson not found", 404);
+    }
+
+    const exercise = lesson.exercises.find((e) => e.orderIndex === exerciseIndex);
+    if (!exercise) {
+      throw new ApiError("NOT_FOUND", "Exercise not found", 404);
+    }
+
+    const attempt = validateUciMove(exercise.fen, [], uci);
+    if (!attempt.valid || !attempt.uci) {
+      return { correct: false };
+    }
+
+    return {
+      correct:
+        attempt.uci.toLowerCase() === exercise.solutionUci.toLowerCase(),
+    };
+  },
 };

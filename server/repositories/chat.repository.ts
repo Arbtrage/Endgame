@@ -62,4 +62,28 @@ export const chatRepository = {
       data: { context },
     });
   },
+
+  listSessions(
+    userId: string,
+    filters: { page: number; pageSize: number },
+  ) {
+    const skip = (filters.page - 1) * filters.pageSize;
+    return prisma.$transaction([
+      prisma.chatSession.findMany({
+        where: { userId },
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: filters.pageSize,
+        include: {
+          messages: {
+            where: { role: "user" },
+            orderBy: { createdAt: "asc" },
+            take: 1,
+          },
+          _count: { select: { messages: true } },
+        },
+      }),
+      prisma.chatSession.count({ where: { userId } }),
+    ]);
+  },
 };

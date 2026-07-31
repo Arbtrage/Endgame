@@ -15,7 +15,6 @@ import {
 } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { OAuthButtons } from "./oauth-buttons";
 
 export function SignInForm() {
   const router = useRouter();
@@ -53,15 +52,6 @@ export function SignInForm() {
         <CardDescription>Sign in to continue your chess journey.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <OAuthButtons callbackUrl={callbackUrl} />
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-          </div>
-        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

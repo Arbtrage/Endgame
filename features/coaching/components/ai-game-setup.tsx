@@ -59,12 +59,14 @@ export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
   });
 
   const preset = TIME_CONTROL_PRESETS[timeControl];
+  const embedded = Boolean(onSuccess);
 
   return (
     <SetupShell
+      embedded={embedded}
       footer={
         <Button
-          className="h-10 w-full text-base sm:max-w-xs"
+          className="h-11 w-full text-base"
           disabled={mutation.isPending}
           onClick={() =>
             mutation.mutate({
@@ -88,15 +90,27 @@ export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
       }
     >
       <div className="flex flex-col gap-6 p-5 sm:p-6">
-        <SetupQuickRow>
-          <SetupSection title="Your color" description="Side you control.">
-            <ColorPicker value={color} onChange={setColor} />
-          </SetupSection>
+        {embedded ? (
+          <>
+            <SetupSection title="Your color" description="Side you control.">
+              <ColorPicker value={color} onChange={setColor} />
+            </SetupSection>
 
-          <SetupSection title="Time control" description="Optional clock.">
-            <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-          </SetupSection>
-        </SetupQuickRow>
+            <SetupSection title="Time control" description="Optional clock.">
+              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+            </SetupSection>
+          </>
+        ) : (
+          <SetupQuickRow>
+            <SetupSection title="Your color" description="Side you control.">
+              <ColorPicker value={color} onChange={setColor} />
+            </SetupSection>
+
+            <SetupSection title="Time control" description="Optional clock.">
+              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+            </SetupSection>
+          </SetupQuickRow>
+        )}
 
         <SetupCallout
           icon={HERO_CALLOUT.icon}
@@ -113,6 +127,7 @@ export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
             value={effectivePersonality}
             onChange={setPersonality}
             showLabel={false}
+            stacked={embedded}
           />
         </SetupSection>
       </div>

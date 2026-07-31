@@ -30,6 +30,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.29",
+    "@ai-sdk/react": "^4.0.47",
     "@base-ui/react": "^1.6.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.9.1",
@@ -37,6 +39,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@tanstack/react-query": "^5.101.4",
+    "ai": "^7.0.44",
     "better-auth": "^1.6.25",
     "chess.js": "^1.4.0",
     "class-variance-authority": "^0.7.1",
@@ -50,6 +53,7 @@
     "react": "19.2.4",
     "react-chessboard": "^5.10.0",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
     "shadcn": "^4.16.0",
     "sonner": "^2.0.7",
     "stockfish.wasm": "^0.10.0",

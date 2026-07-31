@@ -32,7 +32,7 @@ export const aiMoveSchema = z.object({
 
 export const coachChatSchema = z.object({
   message: z.string().min(1).max(2000),
-  sessionId: z.string().uuid().optional(),
+  sessionId: z.string().min(1).optional(),
   context: z
     .object({
       fen: z.string().optional(),
@@ -43,5 +43,38 @@ export const coachChatSchema = z.object({
 });
 
 export const chatHistoryQuerySchema = z.object({
-  sessionId: z.string().uuid().optional(),
+  sessionId: z.string().min(1).optional(),
+});
+
+export const listChatSessionsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const createChatSessionSchema = z.object({
+  context: z
+    .object({
+      fen: z.string().optional(),
+      gameId: z.string().min(1).optional(),
+      mode: z.string().optional(),
+    })
+    .optional(),
+});
+
+const uiMessagePartSchema = z.object({
+  type: z.string(),
+  text: z.string().optional(),
+});
+
+export const uiMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system"]),
+  parts: z.array(uiMessagePartSchema),
+});
+
+export const coachChatStreamSchema = z.object({
+  messages: z.array(uiMessageSchema).min(1),
+  sessionId: z.string().min(1).optional(),
+  context: createChatSessionSchema.shape.context,
+  id: z.string().optional(),
 });

@@ -19,7 +19,7 @@ export function PersonalityCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "rounded-lg border p-3 text-left transition-colors",
+        "w-full rounded-lg border p-3 text-left transition-colors",
         selected
           ? "border-primary bg-primary/5 ring-1 ring-primary"
           : "border-border hover:border-primary/50 hover:bg-muted/40",

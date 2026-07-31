@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { coachingService } from "@/server/services/coaching.service";
 import { gameRepository } from "@/server/repositories/game.repository";
+import { chatRepository } from "@/server/repositories/chat.repository";
 
 vi.mock("@/server/repositories/game.repository", () => ({
   gameRepository: {
@@ -21,6 +22,7 @@ vi.mock("@/server/repositories/chat.repository", () => ({
     createSession: vi.fn(),
     addMessage: vi.fn(),
     updateSessionContext: vi.fn(),
+    listSessions: vi.fn(),
   },
 }));
 
@@ -79,5 +81,51 @@ describe("coachingService", () => {
         personality: "intermediate",
       }),
     ).rejects.toMatchObject({ statusCode: 503 });
+  });
+
+  it("lists chat sessions with preview metadata", async () => {
+    vi.mocked(chatRepository.listSessions).mockResolvedValue([
+      [
+        {
+          id: "session-1",
+          createdAt: new Date("2026-01-01T12:00:00Z"),
+          updatedAt: new Date("2026-01-02T12:00:00Z"),
+          messages: [{ content: "Explain the Italian Game in simple terms" }],
+          _count: { messages: 4 },
+        },
+      ],
+      1,
+    ] as never);
+
+    const result = await coachingService.listChatSessions("user-1", {
+      page: 1,
+      pageSize: 20,
+    });
+
+    expect(result.data[0]?.preview).toContain("Italian Game");
+    expect(result.meta.total).toBe(1);
+  });
+
+  it("creates empty chat sessions", async () => {
+    vi.mocked(chatRepository.createSession).mockResolvedValue({
+      id: "session-new",
+    } as never);
+
+    const result = await coachingService.createChatSession("user-1");
+    expect(result.sessionId).toBe("session-new");
+  });
+
+  it("resolves an existing chat session by id", async () => {
+    vi.mocked(chatRepository.findSession).mockResolvedValue({
+      id: "session-1",
+      messages: [],
+    } as never);
+
+    const result = await coachingService.resolveChatSession(
+      "user-1",
+      "session-1",
+    );
+
+    expect(result.id).toBe("session-1");
   });
 });

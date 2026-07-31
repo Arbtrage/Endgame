@@ -16,7 +16,7 @@ const OPTIONS = [
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
       {OPTIONS.map((option) => {
         const selected = value === option.value;
         return (
@@ -25,7 +25,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-xl border px-4 py-3 text-left transition-all",
+              "w-full rounded-xl border px-4 py-3 text-left transition-all",
               selected
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",

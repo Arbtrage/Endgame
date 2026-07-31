@@ -2,11 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { GraduationCap, Plus, Shield, Skull } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ComponentType } from "react";
 import { useState } from "react";
+import { AiGameSetup } from "@/features/coaching/components/ai-game-setup";
+import { CoachGameSetup } from "@/features/coaching/components/coach-game-setup";
 import { GameCard } from "@/features/game/components/game-card";
+import { GameSetup } from "@/features/game/components/game-setup";
 import { listGames } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
@@ -29,29 +32,66 @@ type GameSetupProps = {
   onSuccess?: (gameId: string) => void;
 };
 
-type PlayModeHubProps = {
-  mode: "COMPUTER" | "AI_OPPONENT" | "COACH";
+type PlayMode = "COMPUTER" | "AI_OPPONENT" | "COACH";
+
+type PlayModeConfig = {
   icon: LucideIcon;
   title: string;
   description: string;
-  hint?: string;
   newGameLabel: string;
   dialogTitle: string;
   dialogDescription: string;
   SetupComponent: ComponentType<GameSetupProps>;
 };
 
-export function PlayModeHub({
-  mode,
-  icon,
-  title,
-  description,
-  hint,
-  newGameLabel,
-  dialogTitle,
-  dialogDescription,
-  SetupComponent,
-}: PlayModeHubProps) {
+const PLAY_MODE_CONFIG: Record<PlayMode, PlayModeConfig> = {
+  COMPUTER: {
+    icon: Skull,
+    title: "Play vs Villain",
+    description: "Random Marvel nemesis · engine-backed · your threat level",
+    newGameLabel: "New game",
+    dialogTitle: "Start vs Villain",
+    dialogDescription:
+      "Pick your color, threat level, and optional time control.",
+    SetupComponent: GameSetup,
+  },
+  AI_OPPONENT: {
+    icon: Shield,
+    title: "Play vs Hero",
+    description: "Random superhero · AI personality · optional banter",
+    newGameLabel: "New game",
+    dialogTitle: "Start vs Hero",
+    dialogDescription:
+      "Choose your side, time control, and hero playing style.",
+    SetupComponent: AiGameSetup,
+  },
+  COACH: {
+    icon: GraduationCap,
+    title: "Coach Mode",
+    description: "Villain opponent · live explanations at key moments",
+    newGameLabel: "New game",
+    dialogTitle: "Start coached game",
+    dialogDescription:
+      "Configure your color, villain strength, and optional clock.",
+    SetupComponent: CoachGameSetup,
+  },
+};
+
+type PlayModeHubProps = {
+  mode: PlayMode;
+  hint?: string;
+};
+
+export function PlayModeHub({ mode, hint }: PlayModeHubProps) {
+  const {
+    icon,
+    title,
+    description,
+    newGameLabel,
+    dialogTitle,
+    dialogDescription,
+    SetupComponent,
+  } = PLAY_MODE_CONFIG[mode];
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -138,12 +178,14 @@ export function PlayModeHub({
       </FeaturePanel>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[min(90vh,820px)] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-h-[min(90vh,820px)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+          <DialogHeader className="border-b px-5 py-4">
             <DialogTitle>{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
-          <SetupComponent onSuccess={handleCreated} />
+          <div className="px-4 pb-4 pt-3">
+            <SetupComponent onSuccess={handleCreated} />
+          </div>
         </DialogContent>
       </Dialog>
     </FeaturePage>

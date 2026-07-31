@@ -8,11 +8,14 @@ import { ExerciseResult } from "@/features/training/components/exercise-result";
 import { HintButton } from "@/features/training/components/hint-button";
 import { LessonProgressBar } from "@/features/training/components/lesson-progress";
 import { PuzzleBoard } from "@/features/training/components/puzzle-board";
-import { getLesson, updateLessonProgress } from "@/shared/api/fetcher";
+import {
+  getLesson,
+  updateLessonProgress,
+  verifyExerciseMove,
+} from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
 
 type LessonViewProps = {
   lessonId: string;
@@ -41,47 +44,47 @@ export function LessonView({ lessonId }: LessonViewProps) {
   });
 
   const exerciseIndex =
-    currentIndex ??
-    lesson?.progress?.currentExercise ??
-    0;
+    currentIndex ?? lesson?.progress?.currentExercise ?? 0;
 
   const exercise = lesson?.exercises[exerciseIndex];
   const total = lesson?.exercises.length ?? 0;
   const completed = lesson?.progress?.completed ?? false;
 
-  const verifyMove = useCallback(
+  const handleMove = useCallback(
     async (uci: string) => {
       if (!exercise) return false;
-      const engine = getStockfishEngine();
-      await engine.ready();
-      const best = await engine.getBestMove(exercise.fen, [], {
-        depth: 15,
-        moveTime: 2000,
-      });
-      return uci === best.uci;
-    },
-    [exercise],
-  );
 
-  async function handleMove(uci: string) {
-    const correct = await verifyMove(uci);
-    setLastResult(correct ? "correct" : "incorrect");
-    if (correct) {
-      const nextIndex = exerciseIndex + 1;
-      const isComplete = nextIndex >= total;
-      await progressMutation.mutateAsync({
-        currentExercise: isComplete ? exerciseIndex : nextIndex,
-        exerciseCorrect: true,
-        completed: isComplete,
-      });
-      if (!isComplete) {
-        setTimeout(() => {
-          setCurrentIndex(nextIndex);
-          setLastResult(null);
-        }, 1500);
+      try {
+        const { correct } = await verifyExerciseMove(lessonId, {
+          exerciseIndex,
+          uci,
+        });
+
+        setLastResult(correct ? "correct" : "incorrect");
+
+        if (correct) {
+          const nextIndex = exerciseIndex + 1;
+          const isComplete = nextIndex >= total;
+          await progressMutation.mutateAsync({
+            currentExercise: isComplete ? exerciseIndex : nextIndex,
+            exerciseCorrect: true,
+            completed: isComplete,
+          });
+          if (!isComplete) {
+            setTimeout(() => {
+              setCurrentIndex(nextIndex);
+              setLastResult(null);
+            }, 1500);
+          }
+        }
+
+        return correct;
+      } catch {
+        return false;
       }
-    }
-  }
+    },
+    [exercise, exerciseIndex, lessonId, progressMutation, total],
+  );
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
@@ -163,7 +166,15 @@ export function LessonView({ lessonId }: LessonViewProps) {
         <>
           <p className="text-sm font-medium">{exercise.objective}</p>
           <div className="mx-auto w-full max-w-md">
-            <PuzzleBoard fen={exercise.fen} onMove={handleMove} />
+            <div className="aspect-square w-full overflow-hidden rounded-sm border border-border/60">
+              <PuzzleBoard
+                key={exercise.id}
+                fen={exercise.fen}
+                exerciseKey={exercise.id}
+                disabled={lastResult === "correct"}
+                onMove={handleMove}
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <HintButton lessonId={lessonId} exerciseIndex={exerciseIndex} />
