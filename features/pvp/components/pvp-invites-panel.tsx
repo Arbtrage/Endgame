@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,10 +11,31 @@ import {
   declinePvpInvite,
   listPvpInvites,
 } from "@/shared/api/fetcher";
-import type { PvpInvite } from "@/shared/api/fetcher";
+import type { PvpActiveGame, PvpInvite } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
+
+function ActiveGameCard({ game }: { game: PvpActiveGame }) {
+  const label = game.opponent.name ?? game.opponent.email;
+
+  return (
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+      <p className="font-medium">Game ready vs {label}</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Your opponent accepted — join the live game.
+      </p>
+      <Button
+        render={<Link href={`/play/${game.gameId}`} />}
+        nativeButton={false}
+        size="sm"
+        className="mt-3 w-full sm:w-auto"
+      >
+        Join game
+      </Button>
+    </div>
+  );
+}
 
 function InviteCard({
   invite,
@@ -61,7 +82,9 @@ function InviteCard({
     <div className="rounded-lg border border-border/60 bg-card p-4">
       <p className="font-medium">{label}</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Expires {new Date(invite.expiresAt).toLocaleString()}
+        {variant === "outgoing"
+          ? `Waiting for acceptance · expires ${new Date(invite.expiresAt).toLocaleString()}`
+          : `Expires ${new Date(invite.expiresAt).toLocaleString()}`}
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         {variant === "incoming" ? (
@@ -101,11 +124,44 @@ function InviteCard({
 }
 
 export function PvpInvitesPanel() {
+  const router = useRouter();
   const [tab, setTab] = useState<"incoming" | "outgoing">("incoming");
+  const seenActiveRef = useRef<Set<string>>(new Set());
+  const initializedRef = useRef(false);
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.pvp.invites,
     queryFn: listPvpInvites,
+    refetchInterval: (query) => {
+      const invites = query.state.data;
+      if (invites?.outgoing.length) return 2000;
+      return false;
+    },
   });
+
+  useEffect(() => {
+    if (!data?.active.length) {
+      if (data && !initializedRef.current) initializedRef.current = true;
+      return;
+    }
+
+    if (!initializedRef.current) {
+      for (const game of data.active) {
+        seenActiveRef.current.add(game.gameId);
+      }
+      initializedRef.current = true;
+      return;
+    }
+
+    for (const game of data.active) {
+      if (seenActiveRef.current.has(game.gameId)) continue;
+      seenActiveRef.current.add(game.gameId);
+      toast.success(
+        `${game.opponent.name ?? game.opponent.email} accepted — joining game`,
+      );
+      router.push(`/play/${game.gameId}`);
+      return;
+    }
+  }, [data, router]);
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading invites…</p>;
@@ -113,15 +169,16 @@ export function PvpInvitesPanel() {
 
   const incoming = data?.incoming ?? [];
   const outgoing = data?.outgoing ?? [];
+  const active = data?.active ?? [];
   const list = tab === "incoming" ? incoming : outgoing;
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 pb-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold">Pending invites</h1>
+          <h1 className="text-xl font-semibold">PvP invites</h1>
           <p className="text-sm text-muted-foreground">
-            Accept challenges or manage invites you sent.
+            Join active games or manage pending challenges.
           </p>
         </div>
         <Button
@@ -133,6 +190,15 @@ export function PvpInvitesPanel() {
           New challenge
         </Button>
       </div>
+
+      {active.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium">Ready to play</h2>
+          {active.map((game) => (
+            <ActiveGameCard key={game.gameId} game={game} />
+          ))}
+        </section>
+      ) : null}
 
       <div className="flex gap-2">
         <button

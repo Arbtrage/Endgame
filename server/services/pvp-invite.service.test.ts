@@ -11,6 +11,7 @@ vi.mock("@/server/repositories/pvp-invite.repository", () => ({
     findByToken: vi.fn(),
     findPendingBetween: vi.fn(),
     listPendingForUser: vi.fn(),
+    listActiveAcceptedForUser: vi.fn(),
     updateStatus: vi.fn(),
     expireStale: vi.fn(),
   },
@@ -36,6 +37,7 @@ vi.mock("@/server/email/send-game-invite", () => ({
 vi.mock("@/server/realtime/pusher", () => ({
   triggerOpponentJoined: vi.fn(),
   triggerRematchOffered: vi.fn(),
+  triggerInviteAccepted: vi.fn(),
 }));
 
 const baseInvite = {

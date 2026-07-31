@@ -138,6 +138,14 @@ export type PvpInvite = {
 export type PvpInviteList = {
   incoming: PvpInvite[];
   outgoing: PvpInvite[];
+  active: PvpActiveGame[];
+};
+
+export type PvpActiveGame = {
+  inviteId: string;
+  gameId: string;
+  opponent: UserSearchResult;
+  respondedAt: string | null;
 };
 
 export type SpectatorGame = GameDetail & {

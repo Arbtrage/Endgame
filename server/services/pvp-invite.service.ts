@@ -4,7 +4,7 @@ import { pvpInviteRepository } from "@/server/repositories/pvp-invite.repository
 import { userRepository } from "@/server/repositories/user.repository";
 import { gameRepository } from "@/server/repositories/game.repository";
 import { resolvePvpColors } from "@/server/services/game-participant";
-import { triggerOpponentJoined, triggerRematchOffered } from "@/server/realtime/pusher";
+import { triggerInviteAccepted, triggerOpponentJoined, triggerRematchOffered } from "@/server/realtime/pusher";
 
 const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -101,14 +101,31 @@ export const pvpInviteService = {
 
   async listInvites(userId: string) {
     await pvpInviteRepository.expireStale();
-    const invites = await pvpInviteRepository.listPendingForUser(userId);
+    const [invites, activeInvites] = await Promise.all([
+      pvpInviteRepository.listPendingForUser(userId),
+      pvpInviteRepository.listActiveAcceptedForUser(userId),
+    ]);
     const incoming = invites
       .filter((i) => i.inviteeId === userId)
       .map(mapInvite);
     const outgoing = invites
       .filter((i) => i.inviterId === userId)
       .map(mapInvite);
-    return { incoming, outgoing };
+    const active = activeInvites
+      .map((invite) => {
+        const opponent =
+          invite.inviterId === userId ? invite.invitee : invite.inviter;
+        const gameId = invite.game?.id ?? invite.gameId;
+        if (!gameId) return null;
+        return {
+          inviteId: invite.id,
+          gameId,
+          opponent,
+          respondedAt: invite.respondedAt?.toISOString() ?? null,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+    return { incoming, outgoing, active };
   },
 
   async getInvite(userId: string, inviteId: string) {
@@ -175,6 +192,12 @@ export const pvpInviteService = {
       userId: invite.invitee.id,
       name: invite.invitee.name,
       gameId: game.id,
+    });
+
+    await triggerInviteAccepted(invite.inviterId, {
+      inviteId: invite.id,
+      gameId: game.id,
+      opponentName: invite.invitee.name ?? invite.invitee.email,
     });
 
     return {

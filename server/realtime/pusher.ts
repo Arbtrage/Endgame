@@ -128,3 +128,28 @@ export function parseGameChannelName(channel: string): string | null {
   if (!channel.startsWith(prefix)) return null;
   return channel.slice(prefix.length) || null;
 }
+
+export function parseUserChannelName(channel: string): string | null {
+  const prefix = "private-user-";
+  if (!channel.startsWith(prefix)) return null;
+  return channel.slice(prefix.length) || null;
+}
+
+export function userChannelName(userId: string): string {
+  return `private-user-${userId}`;
+}
+
+export type InviteAcceptedEvent = {
+  inviteId: string;
+  gameId: string;
+  opponentName: string | null;
+};
+
+export async function triggerInviteAccepted(
+  userId: string,
+  payload: InviteAcceptedEvent,
+) {
+  const pusher = getPusherServer();
+  if (!pusher) return;
+  await pusher.trigger(userChannelName(userId), "invite-accepted", payload);
+}

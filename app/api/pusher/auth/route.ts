@@ -1,6 +1,6 @@
 import { requireAuth } from "@/server/api/middleware";
 import { apiError, withErrorHandler } from "@/server/api/response";
-import { parseGameChannelName } from "@/server/realtime/pusher";
+import { parseGameChannelName, parseUserChannelName } from "@/server/realtime/pusher";
 import { gameService } from "@/server/services/game.service";
 import { getPusherServer } from "@/server/realtime/pusher";
 
@@ -21,19 +21,29 @@ export async function POST(request: Request) {
     }
 
     const gameId = parseGameChannelName(channelName);
-    if (!gameId) {
-      return apiError("FORBIDDEN", "Invalid channel", 403);
+    if (gameId) {
+      const allowed = await gameService.canAccessPusherChannel(
+        session.user.id,
+        gameId,
+      );
+      if (!allowed) {
+        return apiError("FORBIDDEN", "Not a game participant", 403);
+      }
+
+      const auth = pusher.authorizeChannel(socketId, channelName);
+      return Response.json(auth);
     }
 
-    const allowed = await gameService.canAccessPusherChannel(
-      session.user.id,
-      gameId,
-    );
-    if (!allowed) {
-      return apiError("FORBIDDEN", "Not a game participant", 403);
+    const userId = parseUserChannelName(channelName);
+    if (userId) {
+      if (userId !== session.user.id) {
+        return apiError("FORBIDDEN", "Invalid user channel", 403);
+      }
+
+      const auth = pusher.authorizeChannel(socketId, channelName);
+      return Response.json(auth);
     }
 
-    const auth = pusher.authorizeChannel(socketId, channelName);
-    return Response.json(auth);
+    return apiError("FORBIDDEN", "Invalid channel", 403);
   });
 }

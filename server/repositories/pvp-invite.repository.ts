@@ -60,6 +60,19 @@ export const pvpInviteRepository = {
     });
   },
 
+  listActiveAcceptedForUser(userId: string) {
+    return prisma.gameInvite.findMany({
+      where: {
+        status: "ACCEPTED",
+        OR: [{ inviterId: userId }, { inviteeId: userId }],
+        game: { status: "IN_PROGRESS" },
+      },
+      include: inviteInclude,
+      orderBy: { respondedAt: "desc" },
+      take: 10,
+    });
+  },
+
   updateStatus(
     id: string,
     status: InviteStatus,

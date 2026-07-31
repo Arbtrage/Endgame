@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { PvpInviteNotifications } from "@/features/pvp/components/pvp-invite-notifications";
 import { Sidebar } from "@/shared/components/sidebar";
 import { APP_NAME } from "@/shared/constants/brand";
 import { Button } from "@/shared/ui/button";
@@ -12,6 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
+      <PvpInviteNotifications />
       <div className="hidden lg:block">
         <Sidebar className="fixed inset-y-0 left-0 z-40" />
       </div>
