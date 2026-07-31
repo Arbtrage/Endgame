@@ -67,7 +67,7 @@ export function GameReplayControls({
       >
         <ChevronLast className="size-4" />
       </Button>
-      {!atEnd ? (
+      {!atEnd || activeIndex !== null ? (
         <Button type="button" variant="outline" size="sm" className="ml-2" onClick={onGoLive}>
           Live
         </Button>

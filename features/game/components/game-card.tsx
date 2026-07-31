@@ -36,10 +36,13 @@ function modeLabel(mode: GameSummary["mode"]): string {
 }
 
 export function GameCard({ game }: GameCardProps) {
-  const resultLabel = getResultLabel(
-    game.result as "WHITE_WIN" | "BLACK_WIN" | "DRAW" | "ABANDONED" | null,
-    game.playerColor as PlayerColor,
-  );
+  const inProgress = game.status === "IN_PROGRESS";
+  const resultLabel = inProgress
+    ? "In progress"
+    : getResultLabel(
+        game.result as "WHITE_WIN" | "BLACK_WIN" | "DRAW" | "ABANDONED" | null,
+        game.playerColor as PlayerColor,
+      );
 
   return (
     <Link
@@ -57,19 +60,22 @@ export function GameCard({ game }: GameCardProps) {
           <Badge variant="outline" className="shrink-0">
             {modeLabel(game.mode)}
           </Badge>
-          <Badge variant="secondary" className="shrink-0">
+          <Badge
+            variant={inProgress ? "default" : "secondary"}
+            className="shrink-0"
+          >
             {resultLabel}
           </Badge>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground">
           {game.moveCount} moves · {new Date(game.createdAt).toLocaleDateString()}
-          {game.resultReason
+          {!inProgress && game.resultReason
             ? ` · ${formatResultReason(game.resultReason as never)}`
             : ""}
         </p>
       </div>
       <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-        Replay
+        {inProgress ? "Continue" : "Replay"}
         <ChevronRight className="size-4" />
       </span>
     </Link>

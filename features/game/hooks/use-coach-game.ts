@@ -27,6 +27,7 @@ import {
 import { requestEngineBestMove } from "@/shared/engine/request-engine-move";
 import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
 import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
+import { useGameClock } from "@/features/game/hooks/use-game-clock";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
 
 type UseCoachGameOptions = {
@@ -61,6 +62,12 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
   const [loading, setLoading] = useState(true);
   const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
+  const [timeControlInitial, setTimeControlInitial] = useState<number | null>(
+    null,
+  );
+  const [timeControlIncrement, setTimeControlIncrement] = useState<
+    number | null
+  >(null);
   const [coachAutoExplain, setCoachAutoExplain] = useState(true);
   const [explanations, setExplanations] = useState<CoachExplanation[]>([]);
   const [coachLoading, setCoachLoading] = useState(false);
@@ -92,6 +99,8 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
           stockfishLevel: game.stockfishLevel ?? 5,
           moves: game.moves as GameMove[],
         });
+        setTimeControlInitial(game.timeControlInitial);
+        setTimeControlIncrement(game.timeControlIncrement);
         setOrientation(game.playerColor as "white" | "black");
         setCoachAutoExplain(settings?.coachAutoExplain ?? true);
         prevEvalRef.current = 0;
@@ -483,6 +492,52 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
   const isPlayersTurn = isPlayerTurn();
   const inCheck = chessGame.isCheck();
   const checkSquare = inCheck ? chessGame.getKingSquare() : null;
+  const sideToMove = chessTurnToColor(chessGame.turn());
+
+  const handleClockTimeout = useCallback(
+    async (color: PlayerColor) => {
+      if (lifecycle.result) return;
+
+      const winner = color === "white" ? "black" : "white";
+      const nextLifecycle = resolveGameResult(playerColor, "timeout", winner);
+      setLifecycle(nextLifecycle);
+      setPhase("game_over");
+
+      if (persist) {
+        try {
+          await completeGame(gameId, {
+            result: nextLifecycle.result!,
+            resultReason: "timeout",
+            pgn: generatePgn(chessGame, {
+              Result:
+                nextLifecycle.result === "WHITE_WIN"
+                  ? "1-0"
+                  : nextLifecycle.result === "BLACK_WIN"
+                    ? "0-1"
+                    : "1/2-1/2",
+            }),
+            finalFen: chessGame.getLiveFen(),
+          });
+        } catch {
+          toast.error("Failed to save game result");
+        }
+      }
+    },
+    [chessGame, gameId, lifecycle.result, persist, playerColor, setLifecycle, setPhase],
+  );
+
+  const clock = useGameClock({
+    initialSeconds: timeControlInitial,
+    incrementSeconds: timeControlIncrement,
+    sideToMove,
+    paused:
+      reviewIndex !== null ||
+      !!lifecycle.result ||
+      phase === "game_over" ||
+      !!pendingPromotion ||
+      loading,
+    onTimeout: handleClockTimeout,
+  });
 
   const canDrag =
     !lifecycle.result &&
@@ -525,5 +580,8 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
       useBoardStore
         .getState()
         .setOrientation(orientation === "white" ? "black" : "white"),
+    showClocks: clock.enabled,
+    whiteClockMs: clock.whiteMs,
+    blackClockMs: clock.blackMs,
   };
 }

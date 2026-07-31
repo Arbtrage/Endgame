@@ -16,6 +16,7 @@ import { useActiveGameReady } from "@/features/game/hooks/use-game-session";
 import { useGameOverUi } from "@/features/game/hooks/use-game-over-ui";
 import { useMoveSounds } from "@/features/game/hooks/use-move-sounds";
 import { usePlayerDisplayName } from "@/features/game/hooks/use-player-display-name";
+import { useReplayKeyboard } from "@/features/game/hooks/use-replay-keyboard";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 const GameBoard = dynamic(
@@ -43,6 +44,13 @@ export function AiGameView({ gameId }: AiGameViewProps) {
     ready: gameReady,
   });
   useMoveSounds(game.loading ? [] : game.moves);
+  useReplayKeyboard({
+    moveCount: game.moves.length,
+    reviewIndex: game.reviewIndex,
+    onSelectMove: game.goToMove,
+    onGoLive: game.exitReview,
+    enabled: !game.loading && !game.pendingPromotion,
+  });
 
   if (game.loading) {
     return <GamePlaySkeleton />;
@@ -83,6 +91,9 @@ export function AiGameView({ gameId }: AiGameViewProps) {
             inCheck={game.inCheck}
             opponentThinking={game.opponentThinking}
             thinkingLabel={getHeroThinkingLabel(game.opponentName)}
+            showClocks={game.showClocks}
+            whiteClockMs={game.whiteClockMs}
+            blackClockMs={game.blackClockMs}
             board={
               <GameBoard
                 fen={game.fen}

@@ -44,15 +44,19 @@ export function GameSidebarPanel({
       <CardHeader className="shrink-0 border-b py-3">
         <CardTitle className="text-base">Moves</CardTitle>
         <CardDescription>
-          {isFinished
-            ? "Replay the game move by move"
-            : moves.length === 0
-              ? "Make the first move on the board"
-              : `${movePairs} full ${movePairs === 1 ? "move" : "moves"}`}
+          {moves.length === 0
+            ? isFinished
+              ? "Replay the game move by move"
+              : "Make the first move on the board"
+            : activeIndex !== null
+              ? "Reviewing — use arrows or click a move · Live to resume"
+              : isFinished
+                ? "Replay the game move by move"
+                : `${movePairs} full ${movePairs === 1 ? "move" : "moves"} · ← → to step`}
         </CardDescription>
       </CardHeader>
 
-      {isFinished ? (
+      {moves.length > 0 ? (
         <GameReplayControls
           moveCount={moves.length}
           activeIndex={activeIndex}

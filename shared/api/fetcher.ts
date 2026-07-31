@@ -120,11 +120,13 @@ export type CreateGameInput =
     };
 
 export async function listGames(params?: {
+  mode?: string;
   status?: string;
   page?: number;
   pageSize?: number;
 }) {
   const search = new URLSearchParams();
+  if (params?.mode) search.set("mode", params.mode);
   if (params?.status) search.set("status", params.status);
   if (params?.page) search.set("page", String(params.page));
   if (params?.pageSize) search.set("pageSize", String(params.pageSize));

@@ -27,7 +27,11 @@ import { createGame, getSettings } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
 
-export function AiGameSetup() {
+type AiGameSetupProps = {
+  onSuccess?: (gameId: string) => void;
+};
+
+export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
   const router = useRouter();
   const { data: settings } = useQuery({
     queryKey: queryKeys.user.settings,
@@ -45,7 +49,11 @@ export function AiGameSetup() {
   const mutation = useMutation({
     mutationFn: createGame,
     onSuccess: (game) => {
-      router.push(`/play/${game.id}`);
+      if (onSuccess) {
+        onSuccess(game.id);
+      } else {
+        router.push(`/play/${game.id}`);
+      }
     },
     onError: () => toast.error("Unable to start game"),
   });

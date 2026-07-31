@@ -1,15 +1,18 @@
 import { CoachGameSetup } from "@/features/coaching/components/coach-game-setup";
-import { SetupPlayPage } from "@/features/game/components/setup/setup-play-page";
+import { PlayModeHub } from "@/features/game/components/setup/play-mode-hub";
 import { GraduationCap } from "lucide-react";
 
 export default function CoachPlayPage() {
   return (
-    <SetupPlayPage
+    <PlayModeHub
       icon={GraduationCap}
       title="Coach Mode"
       description="Villain opponent · live explanations at key moments"
-    >
-      <CoachGameSetup />
-    </SetupPlayPage>
+      mode="COACH"
+      newGameLabel="New game"
+      dialogTitle="Start coached game"
+      dialogDescription="Configure your color, villain strength, and optional clock."
+      SetupComponent={CoachGameSetup}
+    />
   );
 }

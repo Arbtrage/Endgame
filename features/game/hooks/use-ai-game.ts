@@ -20,6 +20,7 @@ import {
 } from "@/shared/api/fetcher";
 import { requestAiMoveWithFallback } from "@/features/game/engine/ai-move-client";
 import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
+import { useGameClock } from "@/features/game/hooks/use-game-clock";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
 
 type UseAiGameOptions = {
@@ -52,6 +53,12 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
   const setOrientation = useBoardStore((state) => state.setOrientation);
   const [loading, setLoading] = useState(true);
   const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
+  const [timeControlInitial, setTimeControlInitial] = useState<number | null>(
+    null,
+  );
+  const [timeControlIncrement, setTimeControlIncrement] = useState<
+    number | null
+  >(null);
   const [opponentComment, setOpponentComment] = useState<string | null>(null);
   const processingRef = useRef(false);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,6 +86,8 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
           aiPersonality: game.aiPersonality,
           moves: game.moves as GameMove[],
         });
+        setTimeControlInitial(game.timeControlInitial);
+        setTimeControlIncrement(game.timeControlIncrement);
         setOrientation(game.playerColor as "white" | "black");
         if (game.status === "COMPLETED") {
           setLoadedAsCompleted(true);
@@ -364,6 +373,52 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
   const isPlayersTurn = isPlayerTurn();
   const inCheck = chessGame.isCheck();
   const checkSquare = inCheck ? chessGame.getKingSquare() : null;
+  const sideToMove = chessTurnToColor(chessGame.turn());
+
+  const handleClockTimeout = useCallback(
+    async (color: PlayerColor) => {
+      if (lifecycle.result) return;
+
+      const winner = color === "white" ? "black" : "white";
+      const nextLifecycle = resolveGameResult(playerColor, "timeout", winner);
+      setLifecycle(nextLifecycle);
+      setPhase("game_over");
+
+      if (persist) {
+        try {
+          await completeGame(gameId, {
+            result: nextLifecycle.result!,
+            resultReason: "timeout",
+            pgn: generatePgn(chessGame, {
+              Result:
+                nextLifecycle.result === "WHITE_WIN"
+                  ? "1-0"
+                  : nextLifecycle.result === "BLACK_WIN"
+                    ? "0-1"
+                    : "1/2-1/2",
+            }),
+            finalFen: chessGame.getLiveFen(),
+          });
+        } catch {
+          toast.error("Failed to save game result");
+        }
+      }
+    },
+    [chessGame, gameId, lifecycle.result, persist, playerColor, setLifecycle, setPhase],
+  );
+
+  const clock = useGameClock({
+    initialSeconds: timeControlInitial,
+    incrementSeconds: timeControlIncrement,
+    sideToMove,
+    paused:
+      reviewIndex !== null ||
+      !!lifecycle.result ||
+      phase === "game_over" ||
+      !!pendingPromotion ||
+      loading,
+    onTimeout: handleClockTimeout,
+  });
 
   const canDrag =
     !lifecycle.result &&
@@ -403,5 +458,8 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
       useBoardStore
         .getState()
         .setOrientation(orientation === "white" ? "black" : "white"),
+    showClocks: clock.enabled,
+    whiteClockMs: clock.whiteMs,
+    blackClockMs: clock.blackMs,
   };
 }

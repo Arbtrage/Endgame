@@ -37,15 +37,16 @@ export class GameClock {
   }
 
   switchTurn(nextColor: "white" | "black", incrementSeconds = 0): void {
+    const previousColor = this.activeColor;
     this.tick();
-    this.activeColor = nextColor;
-    if (incrementSeconds > 0) {
-      if (nextColor === "white") {
+    if (incrementSeconds > 0 && previousColor) {
+      if (previousColor === "white") {
         this.whiteMs += incrementSeconds * 1000;
       } else {
         this.blackMs += incrementSeconds * 1000;
       }
     }
+    this.activeColor = nextColor;
     this.lastTick = Date.now();
   }
 

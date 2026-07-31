@@ -23,6 +23,9 @@ type ChessPlayAreaProps = {
   opponentThinking: boolean;
   thinkingLabel?: string;
   engineLoading?: boolean;
+  whiteClockMs?: number | null;
+  blackClockMs?: number | null;
+  showClocks?: boolean;
 };
 
 export function ChessPlayArea({
@@ -38,6 +41,9 @@ export function ChessPlayArea({
   opponentThinking,
   thinkingLabel = "Thinking…",
   engineLoading = false,
+  whiteClockMs = null,
+  blackClockMs = null,
+  showClocks = false,
 }: ChessPlayAreaProps) {
   const bottomColor = orientation;
   const topColor = oppositeColor(bottomColor);
@@ -67,6 +73,8 @@ export function ChessPlayArea({
           inCheck={inCheck && activeColor === topColor}
           thinking={topThinking}
           thinkingLabel={topThinkingLabel}
+          clockMs={topColor === "white" ? whiteClockMs : blackClockMs}
+          showClock={showClocks}
         />
 
         <div className="flex min-h-0 flex-1 border-x border-border/70 bg-muted/30">
@@ -83,6 +91,8 @@ export function ChessPlayArea({
           inCheck={inCheck && activeColor === bottomColor}
           thinking={bottomThinking}
           thinkingLabel={topThinkingLabel}
+          clockMs={bottomColor === "white" ? whiteClockMs : blackClockMs}
+          showClock={showClocks}
         />
       </div>
     </div>

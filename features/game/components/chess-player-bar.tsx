@@ -1,6 +1,7 @@
 "use client";
 
 import { Crown, Loader2 } from "lucide-react";
+import { formatClock } from "@/features/game/engine/clock";
 import { cn } from "@/shared/lib/utils";
 import type { PlayerColor } from "@/features/game/types";
 
@@ -14,6 +15,8 @@ type ChessPlayerBarProps = {
   thinking?: boolean;
   thinkingLabel?: string;
   position: "top" | "bottom";
+  clockMs?: number | null;
+  showClock?: boolean;
 };
 
 export function ChessPlayerBar({
@@ -26,7 +29,11 @@ export function ChessPlayerBar({
   thinking = false,
   thinkingLabel = "Thinking…",
   position,
+  clockMs = null,
+  showClock = false,
 }: ChessPlayerBarProps) {
+  const clockLow = clockMs !== null && clockMs <= 20_000;
+
   return (
     <div
       className={cn(
@@ -69,6 +76,18 @@ export function ChessPlayerBar({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        {showClock && clockMs !== null ? (
+          <span
+            className={cn(
+              "min-w-[3.25rem] rounded-md border px-2 py-1 text-right font-mono text-sm tabular-nums",
+              isActive && "border-primary/30 bg-primary/10",
+              clockLow && "border-destructive/40 bg-destructive/10 text-destructive",
+            )}
+            aria-label="Clock"
+          >
+            {formatClock(clockMs)}
+          </span>
+        ) : null}
         {thinking ? (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" aria-hidden />
