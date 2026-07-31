@@ -5,6 +5,8 @@ import { OnboardingWizard } from "@/features/auth/components/onboarding-wizard";
 import { DashboardHero } from "@/features/dashboard/components/dashboard-hero";
 import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { RecentGames } from "@/features/dashboard/components/recent-games";
+import { ActiveLessonsWidget } from "@/features/dashboard/components/active-lessons-widget";
+import { WeeklyReportCard } from "@/features/dashboard/components/weekly-report-card";
 import { getProfile } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { PageHeader } from "@/shared/components/page-header";
@@ -27,6 +29,11 @@ export default function DashboardPage() {
     <ViewportPage className="gap-4 lg:gap-5">
       <ViewportPageSection>
         <DashboardHero />
+      </ViewportPageSection>
+
+      <ViewportPageSection className="space-y-3">
+        <WeeklyReportCard />
+        <ActiveLessonsWidget />
       </ViewportPageSection>
 
       <ViewportPageSection>

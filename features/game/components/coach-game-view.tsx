@@ -15,6 +15,7 @@ import {
   getVillainThinkingLabel,
 } from "@/features/game/constants/marvel-villains";
 import { useCoachGame } from "@/features/game/hooks/use-coach-game";
+import { useActiveGameReady } from "@/features/game/hooks/use-game-session";
 import { useGameOverUi } from "@/features/game/hooks/use-game-over-ui";
 import { useMoveSounds } from "@/features/game/hooks/use-move-sounds";
 import { usePlayerDisplayName } from "@/features/game/hooks/use-player-display-name";
@@ -39,9 +40,11 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
   const game = useCoachGame({ gameId, persist: true });
   const playerName = usePlayerDisplayName();
   const opponentName = getMarvelVillainForGame(gameId);
+  const gameReady = useActiveGameReady(gameId, game.loading);
   const gameOverUi = useGameOverUi({
     isFinished: game.isFinished,
     loadedAsCompleted: game.loadedAsCompleted,
+    ready: gameReady,
   });
   useMoveSounds(game.loading ? [] : game.moves);
 
@@ -141,6 +144,7 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
         lifecycle={game.lifecycle}
         playerColor={game.playerColor}
         moveCount={game.moves.length}
+        gameId={gameId}
       />
     </div>
   );

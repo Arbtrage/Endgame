@@ -5,6 +5,7 @@ import { getProfile } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { useSession } from "@/shared/auth/auth-client";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { StreakBadge } from "@/features/dashboard/components/streak-badge";
 
 export function DashboardHero() {
   const { data: session } = useSession();
@@ -28,9 +29,12 @@ export function DashboardHero() {
   return (
     <div className="rounded-xl border border-border/60 bg-gradient-to-br from-muted/40 via-background to-background px-4 py-3 sm:px-5 sm:py-4">
       <div className="space-y-1.5">
-        <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
-          Welcome back, {name}
-        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
+            Welcome back, {name}
+          </h1>
+          <StreakBadge />
+        </div>
         <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
           Pick a mode below or replay a finished game to study your moves.
         </p>

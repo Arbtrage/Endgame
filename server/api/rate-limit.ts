@@ -58,12 +58,21 @@ export function resetRateLimits(): void {
 export const AI_RATE_LIMITS = {
   global: { limit: 60, windowMs: 60_000 },
   chat: { limit: 20, windowMs: 60_000 },
+  demo: { limit: 5, windowMs: 60_000 },
 } as const;
 
 export function enforceAIRateLimit(userId: string, type: "global" | "chat" = "global") {
   const config = AI_RATE_LIMITS[type];
   return checkRateLimit({
     key: `${type}:${userId}`,
+    ...config,
+  });
+}
+
+export function enforceDemoRateLimit(ip: string) {
+  const config = AI_RATE_LIMITS.demo;
+  return checkRateLimit({
+    key: `demo:${ip}`,
     ...config,
   });
 }

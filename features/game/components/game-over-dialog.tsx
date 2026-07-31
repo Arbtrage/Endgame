@@ -23,6 +23,7 @@ type GameOverDialogProps = {
   lifecycle: GameLifecycleState;
   playerColor: PlayerColor;
   moveCount: number;
+  gameId?: string;
   onPlayAgain?: () => void;
 };
 
@@ -32,6 +33,7 @@ export function GameOverDialog({
   lifecycle,
   playerColor,
   moveCount,
+  gameId,
   onPlayAgain,
 }: GameOverDialogProps) {
   const resultLabel = getResultLabel(lifecycle.result, playerColor);
@@ -54,6 +56,15 @@ export function GameOverDialog({
           <Button type="button" onClick={() => onOpenChange(false)}>
             View replay
           </Button>
+          {gameId ? (
+            <Button
+              render={<Link href={`/analyze/${gameId}`} />}
+              nativeButton={false}
+              variant="secondary"
+            >
+              Analyze
+            </Button>
+          ) : null}
           {onPlayAgain ? (
             <Button type="button" variant="outline" onClick={onPlayAgain}>
               Play again

@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Settings, UserRound, Palette, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { signOut } from "@/shared/auth/auth-client";
 import { PersonalitySelector } from "@/features/coaching/components/personality-selector";
 import {
   BOARD_THEMES,
@@ -16,7 +18,7 @@ import {
   FeaturePanel,
   FeatureSection,
 } from "@/shared/components/feature-page";
-import { getProfile, getSettings, updateProfile, updateSettings } from "@/shared/api/fetcher";
+import { getProfile, getSettings, updateProfile, updateSettings, deleteAccount } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -122,7 +124,60 @@ function ProfileSection() {
       <FeatureSection title="Email" description="Your sign-in email cannot be changed here.">
         <Input id="email" value={profile?.email ?? ""} disabled />
       </FeatureSection>
+
+      <Separator />
+
+      <AccountDeletionSection />
     </div>
+  );
+}
+
+function AccountDeletionSection() {
+  const router = useRouter();
+  const [confirmText, setConfirmText] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function handleDelete() {
+    if (confirmText !== "DELETE") {
+      toast.error('Type DELETE to confirm');
+      return;
+    }
+    setPending(true);
+    try {
+      await deleteAccount();
+      await signOut();
+      router.push("/");
+      toast.success("Account deleted");
+    } catch {
+      toast.error("Could not delete account");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <FeatureSection
+      title="Delete account"
+      description="Permanently remove your account and all associated data."
+    >
+      <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+        <p className="text-sm text-muted-foreground">
+          This action cannot be undone. Type DELETE to confirm.
+        </p>
+        <Input
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="DELETE"
+        />
+        <Button
+          variant="destructive"
+          onClick={handleDelete}
+          disabled={pending || confirmText !== "DELETE"}
+        >
+          {pending ? "Deleting…" : "Delete my account"}
+        </Button>
+      </div>
+    </FeatureSection>
   );
 }
 

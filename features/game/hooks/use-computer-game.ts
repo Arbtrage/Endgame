@@ -16,7 +16,8 @@ import {
   getGame,
   resignGame,
 } from "@/shared/api/fetcher";
-import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
+import { requestEngineBestMove } from "@/shared/engine/request-engine-move";
+import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
 
 type UseComputerGameOptions = {
@@ -53,12 +54,17 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
   const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
   const processingRef = useRef(false);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { persistMove, syncInProgressRef } = useMoveSync(gameId, persist);
+
+  useGameSessionReset(gameId);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      setLoading(true);
+      setLoadedAsCompleted(false);
       try {
         if (persist) {
           const game = await getGame(gameId);
@@ -96,25 +102,30 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
     load();
     return () => {
       cancelled = true;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, [gameId, initGame, persist, setLifecycle, setOrientation, setPhase]);
 
   useEffect(() => {
     let cancelled = false;
-    getStockfishEngine()
-      .ready()
-      .then(() => {
-        if (!cancelled) {
-          getStockfishEngine().setSkillLevel(stockfishLevel);
-          setEngineReady(true);
-          setEngineError(null);
-        }
-      })
-      .catch((error: Error) => {
-        if (!cancelled) {
-          setEngineError(error.message);
-        }
-      });
+    import("@/shared/engine/stockfish-engine").then(({ getStockfishEngine }) =>
+      getStockfishEngine()
+        .ready()
+        .then(() => {
+          if (!cancelled) {
+            getStockfishEngine().setSkillLevel(stockfishLevel);
+            setEngineReady(true);
+            setEngineError(null);
+          }
+        })
+        .catch((error: Error) => {
+          if (!cancelled) {
+            setEngineError(error.message);
+          }
+        }),
+    );
 
     return () => {
       cancelled = true;
@@ -169,12 +180,10 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
     setOpponentThinking(true);
 
     try {
-      const engine = getStockfishEngine();
-      engine.setSkillLevel(stockfishLevel);
-      const best = await engine.getBestMove(
+      const best = await requestEngineBestMove(
         chessGame.getLiveFen(),
         chessGame.getHistoryUci(),
-        { skillLevel: stockfishLevel },
+        stockfishLevel,
       );
 
       const move = chessGame.makeMoveUci(best.uci);
@@ -209,6 +218,12 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
         error instanceof Error ? error.message : "Opponent failed to move";
       setEngineError(message);
       toast.error(message);
+      if (!lifecycle.result && !isPlayerTurn()) {
+        retryTimeoutRef.current = setTimeout(() => {
+          retryTimeoutRef.current = null;
+          void requestOpponentMove();
+        }, 1500);
+      }
     } finally {
       setOpponentThinking(false);
       processingRef.current = false;
@@ -220,7 +235,8 @@ export function useComputerGame({ gameId, persist = true }: UseComputerGameOptio
     moves.length,
     persist,
     persistMove,
-    phase,
+    isPlayerTurn,
+    lifecycle.result,
     setEngineError,
     setOpponentThinking,
     stockfishLevel,

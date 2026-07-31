@@ -1,7 +1,7 @@
 import type { EngineMove, SearchOptions, StockfishEngine, StockfishInstance, Evaluation } from "./types";
 
-const DEFAULT_DEPTH = 15;
-const DEFAULT_MOVE_TIME = 3000;
+const DEFAULT_DEPTH = 12;
+const DEFAULT_MOVE_TIME = 1800;
 
 function loadStockfishScript(): Promise<void> {
   if (typeof window === "undefined") {
@@ -78,6 +78,16 @@ class StockfishEngineImpl implements StockfishEngine {
     timeoutId: ReturnType<typeof setTimeout>;
   } | null = null;
   private listener: ((line: string) => void) | null = null;
+  private searchChain: Promise<void> = Promise.resolve();
+
+  private runExclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.searchChain.then(fn, fn);
+    this.searchChain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
 
   async ready(): Promise<void> {
     if (this.readyPromise) {
@@ -229,14 +239,18 @@ class StockfishEngineImpl implements StockfishEngine {
     moves: string[],
     options: SearchOptions = {},
   ): Promise<EngineMove> {
+    return this.runExclusive(() => this.runSearch(fen, moves, options));
+  }
+
+  private async runSearch(
+    fen: string,
+    moves: string[],
+    options: SearchOptions = {},
+  ): Promise<EngineMove> {
     await this.ready();
 
     if (!this.instance) {
       throw new Error("Stockfish not initialized");
-    }
-
-    if (this.pendingSearch) {
-      this.stop();
     }
 
     const depth =
@@ -279,7 +293,8 @@ class StockfishEngineImpl implements StockfishEngine {
   stop(): void {
     this.instance?.postMessage("stop");
     if (this.pendingSearch) {
-      this.finishSearch(new Error("Search stopped"));
+      clearTimeout(this.pendingSearch.timeoutId);
+      this.pendingSearch = null;
     }
   }
 

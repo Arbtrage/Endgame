@@ -12,6 +12,7 @@ import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton"
 import { GameSidebarPanel } from "@/features/game/components/game-sidebar-panel";
 import { PromotionDialog } from "@/features/game/components/promotion-dialog";
 import { useAiGame } from "@/features/game/hooks/use-ai-game";
+import { useActiveGameReady } from "@/features/game/hooks/use-game-session";
 import { useGameOverUi } from "@/features/game/hooks/use-game-over-ui";
 import { useMoveSounds } from "@/features/game/hooks/use-move-sounds";
 import { usePlayerDisplayName } from "@/features/game/hooks/use-player-display-name";
@@ -35,9 +36,11 @@ type AiGameViewProps = {
 export function AiGameView({ gameId }: AiGameViewProps) {
   const game = useAiGame({ gameId, persist: true });
   const playerName = usePlayerDisplayName();
+  const gameReady = useActiveGameReady(gameId, game.loading);
   const gameOverUi = useGameOverUi({
     isFinished: game.isFinished,
     loadedAsCompleted: game.loadedAsCompleted,
+    ready: gameReady,
   });
   useMoveSounds(game.loading ? [] : game.moves);
 
@@ -130,6 +133,7 @@ export function AiGameView({ gameId }: AiGameViewProps) {
         lifecycle={game.lifecycle}
         playerColor={game.playerColor}
         moveCount={game.moves.length}
+        gameId={gameId}
       />
     </div>
   );

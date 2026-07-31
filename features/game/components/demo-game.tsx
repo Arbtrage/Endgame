@@ -34,6 +34,14 @@ export function DemoGame() {
 
   useEffect(() => {
     getBoardStyles(theme);
+    fetch("/api/demo/access")
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json();
+          throw new Error(body?.error?.message ?? "Demo unavailable");
+        }
+      })
+      .catch((error: Error) => setEngineError(error.message));
     getStockfishEngine()
       .ready()
       .then(() => getStockfishEngine().setSkillLevel(3))

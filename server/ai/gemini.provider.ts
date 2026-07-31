@@ -25,11 +25,13 @@ import { buildExplainMomentPrompt } from "./prompts/explain-moment";
 import { buildCoachChatPrompt } from "./prompts/coach-chat";
 
 const TIMEOUT_MS = 15_000;
+const MOVE_TIMEOUT_MS = 8_000;
 
 type GeminiConfig = {
   temperature: number;
   maxRetries: number;
   allowFallback?: boolean;
+  timeoutMs?: number;
 };
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -67,7 +69,10 @@ export class GeminiProvider implements AIProvider {
       model: modelName,
       generationConfig: { temperature: config.temperature },
     });
-    const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
+    const result = await withTimeout(
+      model.generateContent(prompt),
+      config.timeoutMs ?? TIMEOUT_MS,
+    );
     const text = result.response.text();
     if (!text) {
       throw new Error("Empty response from Gemini");
@@ -109,6 +114,7 @@ export class GeminiProvider implements AIProvider {
       temperature: 0.7,
       maxRetries: 1,
       allowFallback: true,
+      timeoutMs: MOVE_TIMEOUT_MS,
     });
     const parsed = parseGeminiResponse(raw, moveResponseSchema);
 
@@ -148,5 +154,16 @@ export class GeminiProvider implements AIProvider {
       allowFallback: true,
     });
     return parseGeminiResponse(raw, chatResponseSchema);
+  }
+
+  async generateText(
+    prompt: string,
+    temperature = 0.5,
+  ): Promise<string> {
+    return this.generate(prompt, {
+      temperature,
+      maxRetries: 1,
+      allowFallback: true,
+    });
   }
 }

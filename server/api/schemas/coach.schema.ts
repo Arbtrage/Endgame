@@ -4,7 +4,7 @@ import { PERSONALITY_IDS } from "@/shared/ai/personalities";
 export const aiPersonalitySchema = z.enum(PERSONALITY_IDS);
 
 export const explainMomentSchema = z.object({
-  gameId: z.string().uuid(),
+  gameId: z.string().min(1),
   fen: z.string().min(1),
   moves: z.array(z.string()),
   moveNumber: z.number().int().positive(),
@@ -36,7 +36,7 @@ export const coachChatSchema = z.object({
   context: z
     .object({
       fen: z.string().optional(),
-      gameId: z.string().uuid().optional(),
+      gameId: z.string().min(1).optional(),
       mode: z.string().optional(),
     })
     .optional(),

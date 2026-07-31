@@ -21,6 +21,14 @@ jobs:
       - run: pnpm exec tsc --noEmit
       - run: pnpm run lint
       - run: pnpm run test
+      - run: pnpm audit --audit-level=high || true
+      - run: pnpm exec playwright install chromium
+      - run: pnpm run test:e2e
+        env:
+          BETTER_AUTH_SECRET: ci-test-secret-minimum-32-characters-long
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chess
       - run: pnpm exec next build
         env:
           BETTER_AUTH_SECRET: ci-test-secret-minimum-32-characters-long

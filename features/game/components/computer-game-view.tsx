@@ -14,6 +14,7 @@ import {
   getVillainThinkingLabel,
 } from "@/features/game/constants/marvel-villains";
 import { useComputerGame } from "@/features/game/hooks/use-computer-game";
+import { useActiveGameReady } from "@/features/game/hooks/use-game-session";
 import { useGameOverUi } from "@/features/game/hooks/use-game-over-ui";
 import { useMoveSounds } from "@/features/game/hooks/use-move-sounds";
 import { usePlayerDisplayName } from "@/features/game/hooks/use-player-display-name";
@@ -38,9 +39,11 @@ export function ComputerGameView({ gameId }: ComputerGameViewProps) {
   const game = useComputerGame({ gameId, persist: true });
   const playerName = usePlayerDisplayName();
   const opponentName = getMarvelVillainForGame(gameId);
+  const gameReady = useActiveGameReady(gameId, game.loading);
   const gameOverUi = useGameOverUi({
     isFinished: game.isFinished,
     loadedAsCompleted: game.loadedAsCompleted,
+    ready: gameReady,
   });
   useMoveSounds(game.loading ? [] : game.moves);
 
@@ -133,6 +136,7 @@ export function ComputerGameView({ gameId }: ComputerGameViewProps) {
         lifecycle={game.lifecycle}
         playerColor={game.playerColor}
         moveCount={game.moves.length}
+        gameId={gameId}
       />
     </div>
   );

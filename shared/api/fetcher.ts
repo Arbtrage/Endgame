@@ -250,3 +250,217 @@ export function getCoachChatHistory(sessionId?: string) {
     }>;
   }>(`/api/coach/chat/history${query}`);
 }
+
+export type StoredAnalysis = {
+  id: string;
+  gameId: string;
+  accuracy: number;
+  acpl: number;
+  totalMoves: number;
+  blunderCount: number;
+  mistakeCount: number;
+  inaccuracyCount: number;
+  brilliantCount: number;
+  moveAnalysis: unknown[];
+  evalGraph: unknown[];
+  summary: string | null;
+  keyMoments: unknown[] | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function getAnalysis(gameId: string) {
+  return fetchJson<StoredAnalysis | null>(`/api/analysis/${gameId}`);
+}
+
+export function saveAnalysis(
+  gameId: string,
+  data: {
+    accuracy: number;
+    acpl: number;
+    totalMoves: number;
+    blunderCount: number;
+    mistakeCount: number;
+    inaccuracyCount: number;
+    brilliantCount: number;
+    moveAnalysis: unknown[];
+    evalGraph: unknown[];
+  },
+) {
+  return fetchJson<StoredAnalysis>(`/api/analysis/${gameId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function importPgn(pgn: string) {
+  return fetchJson<{ gameId: string; moveCount: number }>(
+    "/api/analysis/import",
+    {
+      method: "POST",
+      body: JSON.stringify({ pgn }),
+    },
+  );
+}
+
+export function explainMove(data: {
+  gameId: string;
+  fen: string;
+  moves: string[];
+  moveNumber: number;
+  san: string;
+  evalBefore: number;
+  evalAfter: number;
+  bestMove?: string;
+  classification?: string;
+}) {
+  return fetchJson<{
+    explanation: string;
+    concepts: string[];
+    suggestedFollowUp?: string;
+  }>("/api/coach/explain-move", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function generateGameSummary(gameId: string) {
+  return fetchJson<{
+    summary: string;
+    strengths?: string[];
+    improvements?: string[];
+    studyTip?: string;
+    cached?: boolean;
+  }>("/api/coach/game-summary", {
+    method: "POST",
+    body: JSON.stringify({ gameId }),
+  });
+}
+
+export type TrainingRecommendations = {
+  hasEnoughData: boolean;
+  weaknesses: Array<{ tag: string; count: number }>;
+  recommendedTopics: string[];
+  activeLessons: number;
+};
+
+export function getTrainingRecommendations() {
+  return fetchJson<TrainingRecommendations>("/api/training/recommendations");
+}
+
+export function getStudyPlan() {
+  return fetchJson<{
+    activeLessons: Array<{
+      lessonId: string;
+      title: string;
+      topic: string;
+      currentExercise: number;
+      totalExercises: number;
+      startedAt: string;
+    }>;
+  }>("/api/training/study-plan");
+}
+
+export function getTrainingLessons(topic?: string) {
+  const query = topic ? `?topic=${topic}` : "";
+  return fetchJson<unknown[]>(`/api/training/lessons${query}`);
+}
+
+export function generateLesson(data?: { topic?: string; weakness?: string }) {
+  return fetchJson<{ id: string }>("/api/training/lessons", {
+    method: "POST",
+    body: JSON.stringify(data ?? {}),
+  });
+}
+
+export function getLesson(lessonId: string) {
+  return fetchJson<LessonDetail>(`/api/training/lessons/${lessonId}`);
+}
+
+export function updateLessonProgress(
+  lessonId: string,
+  data: {
+    currentExercise: number;
+    exerciseCorrect?: boolean;
+    completed?: boolean;
+  },
+) {
+  return fetchJson<unknown>(
+    `/api/training/lessons/${lessonId}/progress`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export function requestHint(
+  lessonId: string,
+  data: { exerciseIndex: number; hintLevel: number },
+) {
+  return fetchJson<{
+    hint: string;
+    level: number;
+    showSolution?: boolean;
+    solution?: string;
+    explanation?: string;
+  }>(`/api/training/lessons/${lessonId}/hint`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export type LessonDetail = {
+  id: string;
+  title: string;
+  description: string;
+  topic: string;
+  difficulty: number;
+  status: string;
+  exercises: Array<{
+    id: string;
+    orderIndex: number;
+    fen: string;
+    objective: string;
+    hintLevels: string[];
+    explanation: string;
+  }>;
+  progress: {
+    currentExercise: number;
+    completed: boolean;
+    score: number | null;
+  } | null;
+};
+
+export type ProgressOverview = {
+  gamesPlayed: number;
+  analyzedGames: number;
+  avgAccuracy: number | null;
+  accuracyTrend: Array<{ gameId: string; accuracy: number; date: string }>;
+  weaknessTags: Array<{ tag: string; count: number }>;
+  streak: number;
+  games: GameSummary[];
+};
+
+export function getProgress() {
+  return fetchJson<ProgressOverview>("/api/user/progress");
+}
+
+export function getWeeklyReport() {
+  return fetchJson<{
+    id: string;
+    narrative: string;
+    gamesPlayed: number;
+    lessonsCompleted: number;
+    avgAccuracy: number | null;
+    weaknessTags: string[];
+    weekStart: string;
+    weekEnd: string;
+  } | null>("/api/reports/weekly");
+}
+
+export function deleteAccount() {
+  return fetchJson<{ deleted: boolean }>("/api/user/account", {
+    method: "DELETE",
+  });
+}

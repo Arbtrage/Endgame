@@ -16,9 +16,10 @@ import { useGameStore } from "@/features/game/stores/game-store";
 import {
   completeGame,
   getGame,
-  requestAiMove,
   resignGame,
 } from "@/shared/api/fetcher";
+import { requestAiMoveWithFallback } from "@/features/game/engine/ai-move-client";
+import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
 
 type UseAiGameOptions = {
@@ -53,15 +54,20 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
   const [loadedAsCompleted, setLoadedAsCompleted] = useState(false);
   const [opponentComment, setOpponentComment] = useState<string | null>(null);
   const processingRef = useRef(false);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { persistMove, syncInProgressRef } = useMoveSync(gameId, persist);
 
   const personality = getPersonality(aiPersonality ?? "intermediate");
   const opponentName = getMarvelSuperheroForGame(gameId);
 
+  useGameSessionReset(gameId);
+
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      setLoading(true);
+      setLoadedAsCompleted(false);
       try {
         const game = await getGame(gameId);
         if (cancelled) return;
@@ -93,6 +99,9 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     load();
     return () => {
       cancelled = true;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, [gameId, initGame, setLifecycle, setOrientation, setPhase]);
 
@@ -145,10 +154,12 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     setOpponentComment(null);
 
     try {
-      const response = await requestAiMove(gameId, {
-        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        moves: chessGame.getHistory(),
+      const response = await requestAiMoveWithFallback({
+        gameId,
+        fen: chessGame.getLiveFen(),
+        moves: [],
         personality: aiPersonality ?? "intermediate",
+        skillLevel: 5,
       });
 
       const move = chessGame.makeMoveUci(response.uci);
@@ -180,6 +191,12 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
       const message =
         error instanceof Error ? error.message : "AI opponent failed to move";
       toast.error(message);
+      if (!lifecycle.result && !isPlayerTurn()) {
+        retryTimeoutRef.current = setTimeout(() => {
+          retryTimeoutRef.current = null;
+          void requestOpponentMove();
+        }, 1500);
+      }
     } finally {
       setOpponentThinking(false);
       processingRef.current = false;
@@ -193,7 +210,9 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     moves.length,
     persist,
     persistMove,
-    phase,
+    isPlayerTurn,
+    lifecycle.result,
+    personality,
     setOpponentThinking,
   ]);
 

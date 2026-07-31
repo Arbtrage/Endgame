@@ -24,7 +24,9 @@ import {
   getSettings,
   resignGame,
 } from "@/shared/api/fetcher";
+import { requestEngineBestMove } from "@/shared/engine/request-engine-move";
 import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
+import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
 
 type UseCoachGameOptions = {
@@ -64,14 +66,19 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
   const [coachLoading, setCoachLoading] = useState(false);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const processingRef = useRef(false);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const momentStateRef = useRef(createKeyMomentDetectorState());
   const prevEvalRef = useRef(0);
   const { persistMove, syncInProgressRef } = useMoveSync(gameId, persist);
+
+  useGameSessionReset(gameId);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      setLoading(true);
+      setLoadedAsCompleted(false);
       try {
         const [game, settings] = await Promise.all([
           getGame(gameId),
@@ -87,6 +94,8 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         });
         setOrientation(game.playerColor as "white" | "black");
         setCoachAutoExplain(settings?.coachAutoExplain ?? true);
+        prevEvalRef.current = 0;
+        momentStateRef.current = createKeyMomentDetectorState();
         if (game.status === "COMPLETED") {
           setLoadedAsCompleted(true);
           setPhase("game_over");
@@ -106,6 +115,9 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
     load();
     return () => {
       cancelled = true;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, [gameId, initGame, setLifecycle, setOrientation, setPhase]);
 
@@ -145,13 +157,15 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         const evalResult = await engine.evaluate(
           chessGame.getLiveFen(),
           chessGame.getHistoryUci(),
-          { depth: 12 },
+          { depth: 10, moveTime: 1200 },
         );
         const evalAfter = evalResult.cp;
         prevEvalRef.current = evalAfter;
 
-        const bestMoveResult = await engine.getBestMove(fenBefore, [], {
-          depth: 12,
+        const historyBefore = chessGame.getHistoryUci().slice(0, -1);
+        const bestMoveResult = await engine.getBestMove(fenBefore, historyBefore, {
+          depth: 10,
+          moveTime: 1200,
         });
         const isBestMove = record.uci.startsWith(bestMoveResult.uci.slice(0, 4));
 
@@ -254,12 +268,10 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
     setOpponentThinking(true);
 
     try {
-      const engine = getStockfishEngine();
-      engine.setSkillLevel(stockfishLevel);
-      const best = await engine.getBestMove(
+      const best = await requestEngineBestMove(
         chessGame.getLiveFen(),
         chessGame.getHistoryUci(),
-        { skillLevel: stockfishLevel },
+        stockfishLevel,
       );
 
       const move = chessGame.makeMoveUci(best.uci);
@@ -294,6 +306,12 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         error instanceof Error ? error.message : "Opponent failed to move";
       setEngineError(message);
       toast.error(message);
+      if (!lifecycle.result && !isPlayerTurn()) {
+        retryTimeoutRef.current = setTimeout(() => {
+          retryTimeoutRef.current = null;
+          void requestOpponentMove();
+        }, 1500);
+      }
     } finally {
       setOpponentThinking(false);
       processingRef.current = false;
@@ -305,7 +323,8 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
     moves.length,
     persist,
     persistMove,
-    phase,
+    isPlayerTurn,
+    lifecycle.result,
     setEngineError,
     setOpponentThinking,
     stockfishLevel,
@@ -378,12 +397,12 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
 
       await persistMove(record);
 
-      void checkKeyMoment(record, fenBefore);
-
       const finished = await finalizeIfOver();
       if (!finished && !isPlayerTurn()) {
-        void requestOpponentMove();
+        await requestOpponentMove();
       }
+
+      void checkKeyMoment(record, fenBefore);
 
       return true;
     },

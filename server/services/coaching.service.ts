@@ -1,14 +1,26 @@
 import { ApiError } from "@/server/api/response";
 import { getAIProvider, isAIConfigured } from "@/server/ai/factory";
+import { GeminiProvider } from "@/server/ai/gemini.provider";
 import {
   getLegalMoves,
   pickRandomLegalMove,
   validateUciMove,
 } from "@/server/ai/move-validator";
+import { parseGeminiResponse } from "@/server/ai/parser";
+import { buildGameSummaryPrompt } from "@/server/ai/prompts/game-summary";
 import type { PersonalityId } from "@/server/ai/types";
+import { analysisRepository } from "@/server/repositories/analysis.repository";
 import { chatRepository } from "@/server/repositories/chat.repository";
 import { coachMomentRepository } from "@/server/repositories/coach-moment.repository";
 import { gameRepository } from "@/server/repositories/game.repository";
+import { z } from "zod";
+
+const gameSummaryResponseSchema = z.object({
+  summary: z.string(),
+  strengths: z.array(z.string()),
+  improvements: z.array(z.string()),
+  studyTip: z.string(),
+});
 
 function ensureAIConfigured() {
   if (!isAIConfigured()) {
@@ -136,6 +148,85 @@ export const coachingService = {
     });
 
     return result;
+  },
+
+  async explainMove(
+    userId: string,
+    input: {
+      gameId: string;
+      fen: string;
+      moves: string[];
+      moveNumber: number;
+      san: string;
+      evalBefore: number;
+      evalAfter: number;
+      bestMove?: string;
+      classification?: string;
+    },
+  ) {
+    return this.explainMoment(userId, {
+      ...input,
+      momentType: input.classification ?? "move",
+    });
+  },
+
+  async generateGameSummary(userId: string, gameId: string) {
+    ensureAIConfigured();
+
+    const game = await gameRepository.findById(gameId);
+    if (!game || game.userId !== userId) {
+      throw new ApiError("NOT_FOUND", "Game not found", 404);
+    }
+
+    const analysis = await analysisRepository.findByGameId(gameId);
+    if (!analysis) {
+      throw new ApiError("NOT_FOUND", "Analysis not found", 404);
+    }
+
+    if (analysis.summary) {
+      return {
+        summary: analysis.summary,
+        cached: true,
+      };
+    }
+
+    const moves = analysis.moveAnalysis as Array<{
+      moveNumber: number;
+      san: string;
+      classification: string;
+      isUserMove: boolean;
+    }>;
+
+    const keyMoments = moves
+      .filter(
+        (m) =>
+          m.isUserMove &&
+          ["blunder", "mistake", "brilliant"].includes(m.classification),
+      )
+      .slice(0, 5);
+
+    const provider = getAIProvider() as GeminiProvider;
+    const prompt = buildGameSummaryPrompt({
+      pgn: game.pgn ?? "",
+      accuracy: analysis.accuracy,
+      acpl: analysis.acpl,
+      blunderCount: analysis.blunderCount,
+      mistakeCount: analysis.mistakeCount,
+      brilliantCount: analysis.brilliantCount,
+      playerColor: game.playerColor,
+      result: game.result,
+      keyMoments,
+    });
+
+    const raw = await provider.generateText(prompt, 0.4);
+    const parsed = parseGeminiResponse(raw, gameSummaryResponseSchema);
+
+    await analysisRepository.updateSummary(gameId, parsed.summary);
+
+    return {
+      ...parsed,
+      cached: false,
+    };
   },
 
   async chat(
