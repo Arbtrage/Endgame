@@ -18,6 +18,7 @@ export type GameResultReason =
   | "threefold_repetition"
   | "fifty_move_rule"
   | "insufficient_material"
+  | "agreement"
   | "draw";
 
 export type TimeControlPreset = "unlimited" | "blitz" | "rapid";

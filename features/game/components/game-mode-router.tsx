@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AiGameView } from "@/features/game/components/ai-game-view";
 import { CoachGameView } from "@/features/game/components/coach-game-view";
 import { ComputerGameView } from "@/features/game/components/computer-game-view";
+import { PvpGameView } from "@/features/pvp/components/pvp-game-view";
 import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton";
 import { getGame } from "@/shared/api/fetcher";
 
@@ -45,6 +46,10 @@ export function GameModeRouter({ gameId }: GameModeRouterProps) {
 
   if (mode === "COACH") {
     return <CoachGameView gameId={gameId} />;
+  }
+
+  if (mode === "PVP") {
+    return <PvpGameView gameId={gameId} />;
   }
 
   return <ComputerGameView gameId={gameId} />;

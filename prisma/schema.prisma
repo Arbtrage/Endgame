@@ -10,12 +10,21 @@ enum GameMode {
   COMPUTER
   AI_OPPONENT
   COACH
+  PVP
 }
 
 enum GameStatus {
   IN_PROGRESS
   COMPLETED
   ABANDONED
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
 }
 
 enum GameResult {
@@ -40,7 +49,12 @@ model User {
   sessions Session[]
   settings UserSettings?
   games           Game[]
+  whiteGames      Game[]       @relation("WhiteGames")
+  blackGames      Game[]       @relation("BlackGames")
+  sentInvites     GameInvite[] @relation("SentInvites")
+  receivedInvites GameInvite[] @relation("ReceivedInvites")
   chatSessions    ChatSession[]
+  gameMessages    GameMessage[]
   trainingLessons TrainingLesson[]
   lessonProgress  LessonProgress[]
   weeklyReports   WeeklyReport[]
@@ -126,18 +140,65 @@ model Game {
   pgn                  String?
   finalFen             String?
   moveCount            Int         @default(0)
+  whiteUserId          String?
+  blackUserId          String?
+  pendingDrawOfferUserId String?
+  pendingDrawOfferAt     DateTime?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
   completedAt          DateTime?
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  whiteUser    User?         @relation("WhiteGames", fields: [whiteUserId], references: [id], onDelete: SetNull)
+  blackUser    User?         @relation("BlackGames", fields: [blackUserId], references: [id], onDelete: SetNull)
   moves        Move[]
+  messages     GameMessage[]
   coachMoments CoachMoment[]
   analysis     Analysis?
+  invite       GameInvite?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
+  @@index([whiteUserId])
+  @@index([blackUserId])
   @@map("games")
+}
+
+model GameInvite {
+  id                   String       @id @default(cuid())
+  token                String       @unique @default(cuid())
+  inviterId            String
+  inviteeId            String
+  status               InviteStatus @default(PENDING)
+  inviterColor         String
+  timeControlInitial   Int?
+  timeControlIncrement Int?
+  gameId               String?      @unique
+  expiresAt            DateTime
+  createdAt            DateTime     @default(now())
+  respondedAt          DateTime?
+
+  inviter User  @relation("SentInvites", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User  @relation("ReceivedInvites", fields: [inviteeId], references: [id], onDelete: Cascade)
+  game    Game? @relation(fields: [gameId], references: [id], onDelete: SetNull)
+
+  @@index([inviteeId, status])
+  @@index([inviterId, status])
+  @@map("game_invites")
+}
+
+model GameMessage {
+  id        String   @id @default(cuid())
+  gameId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, createdAt])
+  @@map("game_messages")
 }
 
 model Move {

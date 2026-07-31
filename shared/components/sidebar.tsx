@@ -12,6 +12,7 @@ import {
   Settings,
   Swords,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import { signOut, useSession } from "@/shared/auth/auth-client";
 import { APP_NAME } from "@/shared/constants/brand";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/play/computer", label: "vs Villains", icon: Monitor },
   { href: "/play/ai", label: "vs Heroes", icon: Swords },
   { href: "/play/coach", label: "Coach Mode", icon: GraduationCap },
+  { href: "/play/pvp", label: "vs Friend", icon: Users },
   { href: "/analyze", label: "Analyze", icon: BarChart3 },
   { href: "/train", label: "Train", icon: GraduationCap },
   { href: "/progress", label: "Progress", icon: TrendingUp },

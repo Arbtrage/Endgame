@@ -96,7 +96,56 @@ export type GameDetail = GameSummary & {
   finalFen: string | null;
   timeControlInitial: number | null;
   timeControlIncrement: number | null;
+  whiteUserId?: string | null;
+  blackUserId?: string | null;
+  whitePlayer?: UserSearchResult | null;
+  blackPlayer?: UserSearchResult | null;
+  pendingDrawOfferUserId?: string | null;
+  pendingDrawOfferAt?: string | null;
   moves: GameMove[];
+};
+
+export type GameChatMessage = {
+  id: string;
+  userId: string;
+  userName: string | null;
+  content: string;
+  createdAt: string;
+};
+
+export type UserSearchResult = {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+};
+
+export type PvpInvite = {
+  id: string;
+  token: string;
+  status: string;
+  inviterColor: string;
+  timeControlInitial: number | null;
+  timeControlIncrement: number | null;
+  gameId: string | null;
+  expiresAt: string;
+  createdAt: string;
+  respondedAt: string | null;
+  inviter: UserSearchResult;
+  invitee: UserSearchResult;
+};
+
+export type PvpInviteList = {
+  incoming: PvpInvite[];
+  outgoing: PvpInvite[];
+};
+
+export type SpectatorGame = GameDetail & {
+  player: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
 };
 
 export type CreateGameInput =
@@ -150,6 +199,53 @@ export function getGame(gameId: string) {
   return fetchJson<GameDetail>(`/api/games/${gameId}`);
 }
 
+export function getGameplayGame(gameId: string) {
+  return fetchJson<SpectatorGame>(`/api/gameplay/${gameId}`);
+}
+
+export function searchUsers(q: string, limit = 10) {
+  const params = new URLSearchParams({ q, limit: String(limit) });
+  return fetchJson<UserSearchResult[]>(`/api/users/search?${params}`);
+}
+
+export function listPvpInvites() {
+  return fetchJson<PvpInviteList>("/api/pvp/invites");
+}
+
+export function createPvpInvite(input: {
+  inviteeId: string;
+  inviterColor: "white" | "black" | "random";
+  timeControl?: { initial: number; increment: number };
+}) {
+  return fetchJson<PvpInvite>("/api/pvp/invites", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function getPvpInviteByToken(token: string) {
+  return fetchJson<PvpInvite>(`/api/pvp/invites/token/${token}`);
+}
+
+export function acceptPvpInvite(inviteId: string) {
+  return fetchJson<{ invite: PvpInvite; game: { id: string } }>(
+    `/api/pvp/invites/${inviteId}/accept`,
+    { method: "POST" },
+  );
+}
+
+export function declinePvpInvite(inviteId: string) {
+  return fetchJson<PvpInvite>(`/api/pvp/invites/${inviteId}/decline`, {
+    method: "POST",
+  });
+}
+
+export function cancelPvpInvite(inviteId: string) {
+  return fetchJson<PvpInvite>(`/api/pvp/invites/${inviteId}`, {
+    method: "DELETE",
+  });
+}
+
 export function recordMove(
   gameId: string,
   move: { san: string; uci: string; fen: string },
@@ -180,6 +276,51 @@ export function completeGame(
 
 export function resignGame(gameId: string) {
   return fetchJson<GameDetail>(`/api/games/${gameId}/resign`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export function offerDraw(gameId: string) {
+  return fetchJson<{ offered: boolean }>(`/api/games/${gameId}/draw-offer`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export function acceptDraw(gameId: string) {
+  return fetchJson<GameDetail>(`/api/games/${gameId}/draw-offer/accept`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export function declineDraw(gameId: string) {
+  return fetchJson<{ declined: boolean }>(
+    `/api/games/${gameId}/draw-offer/decline`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+}
+
+export function listGameMessages(gameId: string, limit = 100) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return fetchJson<GameChatMessage[]>(
+    `/api/games/${gameId}/messages?${params}`,
+  );
+}
+
+export function sendGameMessage(gameId: string, content: string) {
+  return fetchJson<GameChatMessage>(`/api/games/${gameId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+}
+
+export function createRematchInvite(gameId: string) {
+  return fetchJson<PvpInvite>(`/api/games/${gameId}/rematch`, {
     method: "POST",
     body: JSON.stringify({}),
   });

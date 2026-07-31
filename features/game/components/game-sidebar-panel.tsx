@@ -20,10 +20,13 @@ type GameSidebarPanelProps = {
   onSelectMove: (index: number) => void;
   onResign: () => void;
   onFlipBoard: () => void;
+  onOfferDraw?: () => void;
   onGoLive?: () => void;
   disabled?: boolean;
   isFinished?: boolean;
+  drawOfferPending?: boolean;
   topSlot?: ReactNode;
+  bottomSlot?: ReactNode;
 };
 
 export function GameSidebarPanel({
@@ -32,10 +35,13 @@ export function GameSidebarPanel({
   onSelectMove,
   onResign,
   onFlipBoard,
+  onOfferDraw,
   onGoLive,
   disabled = false,
   isFinished = false,
+  drawOfferPending = false,
   topSlot,
+  bottomSlot,
 }: GameSidebarPanelProps) {
   const movePairs = Math.ceil(moves.length / 2);
 
@@ -66,7 +72,7 @@ export function GameSidebarPanel({
       ) : null}
 
       {topSlot ? (
-        <div className="shrink-0 border-b px-4 py-3">{topSlot}</div>
+        <div className="shrink-0 border-b px-3 py-2.5 sm:px-4 sm:py-3">{topSlot}</div>
       ) : null}
 
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
@@ -77,12 +83,19 @@ export function GameSidebarPanel({
         />
       </CardContent>
 
-      <CardFooter className="shrink-0 flex-col gap-2 sm:flex-row">
+      {bottomSlot ? (
+        <div className="shrink-0 border-t px-3 py-2.5 sm:px-4 sm:py-3">{bottomSlot}</div>
+      ) : null}
+
+      <CardFooter className="shrink-0 flex-col gap-2 border-t pt-3">
         <GameControls
           onResign={onResign}
           onFlipBoard={onFlipBoard}
+          onOfferDraw={onOfferDraw}
           disabled={disabled}
           hideResign={isFinished}
+          hideDrawOffer={isFinished}
+          drawOfferPending={drawOfferPending}
         />
       </CardFooter>
     </Card>

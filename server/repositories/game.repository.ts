@@ -10,8 +10,32 @@ export const gameRepository = {
     aiPersonality?: string | null;
     timeControlInitial?: number | null;
     timeControlIncrement?: number | null;
+    whiteUserId?: string | null;
+    blackUserId?: string | null;
   }) {
     return prisma.game.create({ data });
+  },
+
+  createPvp(data: {
+    userId: string;
+    playerColor: string;
+    whiteUserId: string;
+    blackUserId: string;
+    timeControlInitial: number | null;
+    timeControlIncrement: number | null;
+  }) {
+    return prisma.game.create({
+      data: {
+        userId: data.userId,
+        mode: "PVP",
+        status: "IN_PROGRESS",
+        playerColor: data.playerColor,
+        whiteUserId: data.whiteUserId,
+        blackUserId: data.blackUserId,
+        timeControlInitial: data.timeControlInitial,
+        timeControlIncrement: data.timeControlIncrement,
+      },
+    });
   },
 
   findById(id: string) {
@@ -20,6 +44,22 @@ export const gameRepository = {
       include: {
         moves: {
           orderBy: { moveNumber: "asc" },
+        },
+        whiteUser: { select: { id: true, name: true, email: true, image: true } },
+        blackUser: { select: { id: true, name: true, email: true, image: true } },
+      },
+    });
+  },
+
+  findByIdWithUser(id: string) {
+    return prisma.game.findUnique({
+      where: { id },
+      include: {
+        moves: {
+          orderBy: { moveNumber: "asc" },
+        },
+        user: {
+          select: { id: true, name: true, email: true },
         },
       },
     });
@@ -63,7 +103,11 @@ export const gameRepository = {
       prisma.move.create({ data }),
       prisma.game.update({
         where: { id: data.gameId },
-        data: { moveCount: data.moveNumber },
+        data: {
+          moveCount: data.moveNumber,
+          pendingDrawOfferUserId: null,
+          pendingDrawOfferAt: null,
+        },
       }),
     ]);
   },
@@ -96,6 +140,8 @@ export const gameRepository = {
         finalFen: data.finalFen,
         moveCount: data.moveCount,
         completedAt: new Date(),
+        pendingDrawOfferUserId: null,
+        pendingDrawOfferAt: null,
       },
     });
   },
@@ -108,6 +154,28 @@ export const gameRepository = {
         result: data.result,
         resultReason: data.resultReason,
         completedAt: new Date(),
+        pendingDrawOfferUserId: null,
+        pendingDrawOfferAt: null,
+      },
+    });
+  },
+
+  setDrawOffer(gameId: string, userId: string) {
+    return prisma.game.update({
+      where: { id: gameId },
+      data: {
+        pendingDrawOfferUserId: userId,
+        pendingDrawOfferAt: new Date(),
+      },
+    });
+  },
+
+  clearDrawOffer(gameId: string) {
+    return prisma.game.update({
+      where: { id: gameId },
+      data: {
+        pendingDrawOfferUserId: null,
+        pendingDrawOfferAt: null,
       },
     });
   },

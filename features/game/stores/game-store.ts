@@ -11,7 +11,7 @@ type PendingPromotion = {
 
 type GameStore = {
   gameId: string | null;
-  gameMode: "COMPUTER" | "AI_OPPONENT" | "COACH" | null;
+  gameMode: "COMPUTER" | "AI_OPPONENT" | "COACH" | "PVP" | null;
   playerColor: PlayerColor;
   stockfishLevel: number;
   aiPersonality: string | null;
@@ -25,7 +25,7 @@ type GameStore = {
   pendingPromotion: PendingPromotion | null;
   initGame: (config: {
     gameId: string;
-    gameMode?: "COMPUTER" | "AI_OPPONENT" | "COACH";
+    gameMode?: "COMPUTER" | "AI_OPPONENT" | "COACH" | "PVP";
     playerColor: PlayerColor;
     stockfishLevel: number;
     aiPersonality?: string | null;
