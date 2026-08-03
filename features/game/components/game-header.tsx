@@ -21,9 +21,11 @@ export function GameHeader({
 }: GameHeaderProps) {
   const meta = playingStyle
     ? `${playerColor} · ${playingStyle} style`
-    : modeLabel.includes("AI") || modeLabel === "Hero Match"
+    : modeLabel === "PvP"
       ? `Playing as ${playerColor}`
-      : `${playerColor} · Level ${stockfishLevel}/20`;
+      : modeLabel.includes("AI") || modeLabel === "Hero Match"
+        ? `Playing as ${playerColor}`
+        : `${playerColor} · Level ${stockfishLevel}/20`;
 
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">

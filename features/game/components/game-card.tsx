@@ -18,6 +18,7 @@ type GameCardProps = {
 };
 
 function opponentLabel(game: GameSummary): string {
+  if (game.mode === "PVP") return "Friend";
   if (game.mode === "AI_OPPONENT") {
     return getMarvelSuperheroForGame(game.id);
   }
@@ -26,6 +27,8 @@ function opponentLabel(game: GameSummary): string {
 
 function modeLabel(mode: GameSummary["mode"]): string {
   switch (mode) {
+    case "PVP":
+      return "PvP";
     case "AI_OPPONENT":
       return "Hero";
     case "COACH":
@@ -74,7 +77,7 @@ export function GameCard({ game }: GameCardProps) {
             : ""}
         </p>
       </div>
-      <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
         {inProgress ? "Continue" : "Replay"}
         <ChevronRight className="size-4" />
       </span>

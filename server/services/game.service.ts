@@ -167,7 +167,14 @@ export const gameService = {
         status: game.status,
         result: game.result,
         resultReason: game.resultReason,
-        playerColor: game.playerColor,
+        playerColor:
+          game.mode === "PVP"
+            ? game.whiteUserId === userId
+              ? "white"
+              : game.blackUserId === userId
+                ? "black"
+                : game.playerColor
+            : game.playerColor,
         stockfishLevel: game.stockfishLevel,
         aiPersonality: game.aiPersonality,
         moveCount: game.moveCount,

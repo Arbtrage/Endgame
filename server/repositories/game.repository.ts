@@ -74,11 +74,22 @@ export const gameRepository = {
       pageSize: number;
     },
   ) {
-    const where = {
-      userId,
-      ...(filters.mode ? { mode: filters.mode } : {}),
-      ...(filters.status ? { status: filters.status } : {}),
-    };
+    const where =
+      filters.mode === "PVP"
+        ? {
+            mode: "PVP" as const,
+            OR: [
+              { whiteUserId: userId },
+              { blackUserId: userId },
+              { userId },
+            ],
+            ...(filters.status ? { status: filters.status } : {}),
+          }
+        : {
+            userId,
+            ...(filters.mode ? { mode: filters.mode } : {}),
+            ...(filters.status ? { status: filters.status } : {}),
+          };
 
     return Promise.all([
       prisma.game.findMany({

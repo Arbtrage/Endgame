@@ -25,6 +25,9 @@ type GameOverDialogProps = {
   moveCount: number;
   gameId?: string;
   onPlayAgain?: () => void;
+  playAgainLabel?: string;
+  playAgainDisabled?: boolean;
+  playAgainHint?: string;
 };
 
 export function GameOverDialog({
@@ -35,6 +38,9 @@ export function GameOverDialog({
   moveCount,
   gameId,
   onPlayAgain,
+  playAgainLabel = "Play again",
+  playAgainDisabled = false,
+  playAgainHint,
 }: GameOverDialogProps) {
   const resultLabel = getResultLabel(lifecycle.result, playerColor);
 
@@ -52,6 +58,9 @@ export function GameOverDialog({
             {moveCount} moves
           </DialogDescription>
         </DialogHeader>
+        {playAgainHint ? (
+          <p className="text-sm text-muted-foreground">{playAgainHint}</p>
+        ) : null}
         <DialogFooter className="grid grid-cols-2 gap-2">
           <Button type="button" className="w-full" onClick={() => onOpenChange(false)}>
             View replay
@@ -71,9 +80,10 @@ export function GameOverDialog({
               type="button"
               variant="outline"
               className="w-full"
+              disabled={playAgainDisabled}
               onClick={onPlayAgain}
             >
-              Play again
+              {playAgainLabel}
             </Button>
           ) : (
             <Button

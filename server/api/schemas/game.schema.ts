@@ -29,7 +29,7 @@ export const createGameSchema = z.discriminatedUnion("mode", [
 ]);
 
 export const listGamesSchema = z.object({
-  mode: z.enum(["COMPUTER", "AI_OPPONENT", "COACH"]).optional(),
+  mode: z.enum(["COMPUTER", "AI_OPPONENT", "COACH", "PVP"]).optional(),
   status: z.enum(["IN_PROGRESS", "COMPLETED", "ABANDONED"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20),

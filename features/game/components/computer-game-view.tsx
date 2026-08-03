@@ -7,7 +7,6 @@ import { GameOverDialog } from "@/features/game/components/game-over-dialog";
 import { GameResultBanner } from "@/features/game/components/game-result-banner";
 import { GamePlayLayout } from "@/features/game/components/game-play-layout";
 import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton";
-import { GameSidebarPanel } from "@/features/game/components/game-sidebar-panel";
 import { PromotionDialog } from "@/features/game/components/promotion-dialog";
 import {
   getMarvelVillainForGame,
@@ -118,18 +117,16 @@ export function ComputerGameView({ gameId }: ComputerGameViewProps) {
             }
           />
         }
-        sidebar={
-          <GameSidebarPanel
-            moves={game.moves}
-            activeIndex={game.reviewIndex}
-            onSelectMove={game.goToMove}
-            onResign={game.handleResign}
-            onFlipBoard={game.flipBoard}
-            onGoLive={game.exitReview}
-            isFinished={game.isFinished}
-            disabled={false}
-          />
-        }
+        panel={{
+          moves: game.moves,
+          activeIndex: game.reviewIndex,
+          onSelectMove: game.goToMove,
+          onResign: game.handleResign,
+          onFlipBoard: game.flipBoard,
+          onGoLive: game.exitReview,
+          isFinished: game.isFinished,
+          disabled: false,
+        }}
       />
 
       <PromotionDialog

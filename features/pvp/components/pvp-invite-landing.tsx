@@ -35,7 +35,7 @@ export function PvpInviteLanding({ token }: { token: string }) {
     mutationFn: () => declinePvpInvite(invite!.id),
     onSuccess: () => {
       toast.success("Invite declined");
-      router.push("/pvp/invites");
+      router.push("/play/pvp");
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -54,7 +54,7 @@ export function PvpInviteLanding({ token }: { token: string }) {
       <div className="mx-auto w-full max-w-md py-2 text-center">
         <p className="text-sm text-destructive">Invite not found or expired.</p>
         <Button
-          render={<Link href="/pvp/invites" />}
+          render={<Link href="/play/pvp" />}
           nativeButton={false}
           variant="outline"
           className="mt-4"

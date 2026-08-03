@@ -75,7 +75,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
   const [chatMessages, setChatMessages] = useState<GameChatMessage[]>([]);
   const [rematchInviteId, setRematchInviteId] = useState<string | null>(null);
   const [rematchOfferedByName, setRematchOfferedByName] = useState<string | null>(null);
-  const [showGameOverDialog, setShowGameOverDialog] = useState(false);
   const lastSyncedMoveRef = useRef(0);
   const { persistMove } = useMoveSync(gameId, true);
 
@@ -189,7 +188,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
       });
       setPhase("game_over");
       setPendingDrawOfferUserId(null);
-      setShowGameOverDialog(true);
     },
     [setLifecycle, setPhase],
   );
@@ -216,7 +214,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     (payload: { inviteId: string; offeredByName: string | null }) => {
       setRematchInviteId(payload.inviteId);
       setRematchOfferedByName(payload.offeredByName);
-      setShowGameOverDialog(true);
     },
     [],
   );
@@ -252,7 +249,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
 
     setLifecycle(nextLifecycle);
     setPhase("game_over");
-    setShowGameOverDialog(true);
 
     if (nextLifecycle.result) {
       await completeGame(gameId, {
@@ -352,7 +348,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     const nextLifecycle = resolveGameResult(playerColor, "resignation");
     setLifecycle(nextLifecycle);
     setPhase("game_over");
-    setShowGameOverDialog(true);
     try {
       await resignGame(gameId);
     } catch {
@@ -377,7 +372,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     setLifecycle(nextLifecycle);
     setPhase("game_over");
     setPendingDrawOfferUserId(null);
-    setShowGameOverDialog(true);
     try {
       await acceptDraw(gameId);
     } catch {
@@ -450,7 +444,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
       const nextLifecycle = resolveGameResult(playerColor, "timeout", winner);
       setLifecycle(nextLifecycle);
       setPhase("game_over");
-      setShowGameOverDialog(true);
       try {
         await completeGame(gameId, {
           result: nextLifecycle.result!,
@@ -545,8 +538,6 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     isOwnDrawOffer,
     rematchInviteId,
     rematchOfferedByName,
-    showGameOverDialog,
-    setShowGameOverDialog,
     goToMove,
     exitReview,
     flipBoard,

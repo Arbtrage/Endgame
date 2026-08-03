@@ -14,7 +14,7 @@ import {
 } from "@/shared/ui/card";
 import type { GameMove } from "@/features/game/types";
 
-type GameSidebarPanelProps = {
+export type GameSidebarPanelProps = {
   moves: GameMove[];
   activeIndex: number | null;
   onSelectMove: (index: number) => void;
@@ -28,6 +28,117 @@ type GameSidebarPanelProps = {
   topSlot?: ReactNode;
   bottomSlot?: ReactNode;
 };
+
+function getMovesDescription(
+  moves: GameMove[],
+  activeIndex: number | null,
+  isFinished: boolean,
+): string {
+  const movePairs = Math.ceil(moves.length / 2);
+
+  if (moves.length === 0) {
+    return isFinished
+      ? "Replay the game move by move"
+      : "Make the first move on the board";
+  }
+
+  if (activeIndex !== null) {
+    return "Reviewing — use arrows or click a move · Live to resume";
+  }
+
+  if (isFinished) {
+    return "Replay the game move by move";
+  }
+
+  return `${movePairs} full ${movePairs === 1 ? "move" : "moves"} · ← → to step`;
+}
+
+type GameSidebarMovesSectionProps = Pick<
+  GameSidebarPanelProps,
+  "moves" | "activeIndex" | "onSelectMove" | "onGoLive" | "isFinished"
+> & {
+  showHeader?: boolean;
+  className?: string;
+};
+
+export function GameSidebarMovesSection({
+  moves,
+  activeIndex,
+  onSelectMove,
+  onGoLive,
+  isFinished = false,
+  showHeader = true,
+  className,
+}: GameSidebarMovesSectionProps) {
+  return (
+    <div className={className ?? "flex min-h-0 flex-1 flex-col overflow-hidden"}>
+      {showHeader ? (
+        <div className="shrink-0 border-b px-3 py-3 sm:px-4">
+          <p className="text-base font-semibold">Moves</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {getMovesDescription(moves, activeIndex, isFinished)}
+          </p>
+        </div>
+      ) : null}
+
+      {moves.length > 0 ? (
+        <GameReplayControls
+          moveCount={moves.length}
+          activeIndex={activeIndex}
+          onSelectMove={onSelectMove}
+          onGoLive={onGoLive ?? (() => onSelectMove(moves.length - 1))}
+        />
+      ) : null}
+
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <MoveList
+          moves={moves}
+          activeIndex={activeIndex}
+          onSelectMove={onSelectMove}
+        />
+      </div>
+    </div>
+  );
+}
+
+type GameSidebarActionsSectionProps = Pick<
+  GameSidebarPanelProps,
+  | "onResign"
+  | "onFlipBoard"
+  | "onOfferDraw"
+  | "disabled"
+  | "isFinished"
+  | "drawOfferPending"
+> & {
+  bannerSlot?: ReactNode;
+  className?: string;
+};
+
+export function GameSidebarActionsSection({
+  onResign,
+  onFlipBoard,
+  onOfferDraw,
+  disabled = false,
+  isFinished = false,
+  drawOfferPending = false,
+  bannerSlot,
+  className,
+}: GameSidebarActionsSectionProps) {
+  return (
+    <div className={className ?? "flex flex-col gap-3 p-3 sm:p-4"}>
+      {bannerSlot ? <div className="shrink-0">{bannerSlot}</div> : null}
+      <GameControls
+        onResign={onResign}
+        onFlipBoard={onFlipBoard}
+        onOfferDraw={onOfferDraw}
+        disabled={disabled}
+        hideResign={isFinished}
+        hideDrawOffer={isFinished}
+        drawOfferPending={drawOfferPending}
+      />
+    </div>
+  );
+}
 
 export function GameSidebarPanel({
   moves,
@@ -43,22 +154,12 @@ export function GameSidebarPanel({
   topSlot,
   bottomSlot,
 }: GameSidebarPanelProps) {
-  const movePairs = Math.ceil(moves.length / 2);
-
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="shrink-0 border-b py-3">
         <CardTitle className="text-base">Moves</CardTitle>
         <CardDescription>
-          {moves.length === 0
-            ? isFinished
-              ? "Replay the game move by move"
-              : "Make the first move on the board"
-            : activeIndex !== null
-              ? "Reviewing — use arrows or click a move · Live to resume"
-              : isFinished
-                ? "Replay the game move by move"
-                : `${movePairs} full ${movePairs === 1 ? "move" : "moves"} · ← → to step`}
+          {getMovesDescription(moves, activeIndex, isFinished)}
         </CardDescription>
       </CardHeader>
 
@@ -72,7 +173,9 @@ export function GameSidebarPanel({
       ) : null}
 
       {topSlot ? (
-        <div className="shrink-0 border-b px-3 py-2.5 sm:px-4 sm:py-3">{topSlot}</div>
+        <div className="shrink-0 border-b px-3 py-2.5 sm:px-4 sm:py-3">
+          {topSlot}
+        </div>
       ) : null}
 
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
@@ -84,7 +187,9 @@ export function GameSidebarPanel({
       </CardContent>
 
       {bottomSlot ? (
-        <div className="shrink-0 border-t px-3 py-2.5 sm:px-4 sm:py-3">{bottomSlot}</div>
+        <div className="shrink-0 border-t px-3 py-2.5 sm:px-4 sm:py-3">
+          {bottomSlot}
+        </div>
       ) : null}
 
       <CardFooter className="shrink-0 flex-col gap-2 border-t pt-3">

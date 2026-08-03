@@ -12,7 +12,7 @@ type SendGameInviteInput = {
 function buildGameInviteHtml(input: SendGameInviteInput): string {
   const appUrl = getAppUrl();
   const acceptUrl = `${appUrl}/pvp/invite/${input.token}`;
-  const invitesUrl = `${appUrl}/pvp/invites`;
+  const invitesUrl = `${appUrl}/play/pvp`;
   const expiry = input.expiresAt.toLocaleString("en-US", {
     dateStyle: "medium",
     timeStyle: "short",

@@ -37,7 +37,7 @@ export function ChessPlayerBar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-between gap-3 border border-border/70 bg-card px-4 py-2.5 transition-colors",
+        "flex shrink-0 items-center justify-between gap-2 border border-border/70 bg-card px-3 py-2 transition-colors sm:gap-3 sm:px-4 sm:py-2.5",
         position === "top" ? "rounded-t-xl border-b-0" : "rounded-b-xl border-t-0",
         isActive && "border-primary/30 bg-primary/5",
         inCheck && "border-amber-500/40 bg-amber-500/10",
