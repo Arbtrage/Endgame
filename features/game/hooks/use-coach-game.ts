@@ -29,6 +29,7 @@ import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
 import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
 import { useGameClock } from "@/features/game/hooks/use-game-clock";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
+import { useSession } from "@/shared/auth/auth-client";
 
 type UseCoachGameOptions = {
   gameId: string;
@@ -36,6 +37,7 @@ type UseCoachGameOptions = {
 };
 
 export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
+  const { data: session } = useSession();
   const {
     playerColor,
     stockfishLevel,
@@ -269,7 +271,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
     }
 
     return true;
-  }, [chessGame, gameId, persist, playerColor, setLifecycle, setPhase]);
+  }, [chessGame, gameId, persist, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const requestOpponentMove = useCallback(async () => {
     if (processingRef.current || phase === "game_over") return;
@@ -476,7 +478,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         toast.error("Failed to save resignation");
       }
     }
-  }, [gameId, persist, playerColor, setLifecycle, setPhase]);
+  }, [gameId, persist, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const getLegalMovesForSquare = useCallback(
     (square: string) => chessGame.getLegalMoves(square),
@@ -523,7 +525,7 @@ export function useCoachGame({ gameId, persist = true }: UseCoachGameOptions) {
         }
       }
     },
-    [chessGame, gameId, lifecycle.result, persist, playerColor, setLifecycle, setPhase],
+    [chessGame, gameId, lifecycle.result, persist, playerColor, session?.user?.id, setLifecycle, setPhase],
   );
 
   const clock = useGameClock({

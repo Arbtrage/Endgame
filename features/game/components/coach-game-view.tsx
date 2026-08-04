@@ -5,6 +5,10 @@ import { CoachPanel } from "@/features/coaching/components/coach-panel";
 import { ChessPlayArea } from "@/features/game/components/chess-play-area";
 import { GameHeader } from "@/features/game/components/game-header";
 import { GameOverDialog } from "@/features/game/components/game-over-dialog";
+import {
+  getAnalysisBackgroundHint,
+  useBackgroundAnalysisStatus,
+} from "@/features/analysis/hooks/use-background-analysis-status";
 import { GameResultBanner } from "@/features/game/components/game-result-banner";
 import { GamePlayLayout } from "@/features/game/components/game-play-layout";
 import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton";
@@ -46,6 +50,7 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
     loadedAsCompleted: game.loadedAsCompleted,
     ready: gameReady,
   });
+  const bgAnalysisStatus = useBackgroundAnalysisStatus(gameId);
   useMoveSounds(game.loading ? [] : game.moves);
   useReplayKeyboard({
     moveCount: game.moves.length,
@@ -153,6 +158,7 @@ export function CoachGameView({ gameId }: CoachGameViewProps) {
         playerColor={game.playerColor}
         moveCount={game.moves.length}
         gameId={gameId}
+        analysisHint={getAnalysisBackgroundHint(bgAnalysisStatus)}
       />
     </div>
   );

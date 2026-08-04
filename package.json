@@ -27,7 +27,10 @@
     "test:e2e": "playwright test",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "trigger:dev": "trigger dev",
+    "trigger:deploy": "trigger deploy",
+    "analysis:backfill": "tsx scripts/backfill-analysis.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.29",
@@ -42,6 +45,7 @@
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.98",
     "@tanstack/react-query": "^5.101.4",
+    "@trigger.dev/sdk": "^4.5.9",
     "ai": "^7.0.44",
     "better-auth": "^1.6.25",
     "chess.js": "^1.4.0",
@@ -76,6 +80,7 @@
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
+    "@trigger.dev/build": "^4.5.9",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
@@ -87,6 +92,7 @@
     "eslint-config-next": "16.2.12",
     "jsdom": "^30.0.1",
     "tailwindcss": "^4",
+    "trigger.dev": "^4.5.9",
     "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.10"

@@ -6,17 +6,28 @@
 |-------|-------|
 | Version | 1.0.0 |
 | Status | Approved for Implementation |
-| Last Updated | 2026-07-30 |
+| Last Updated | 2026-08-05 |
 
 ---
 
 ## Overview
 
-Stockfish runs exclusively on the client as a WebAssembly (WASM) module inside a dedicated Web Worker. The backend NEVER invokes Stockfish. This is a non-negotiable architectural constraint.
+Stockfish runs on the client as a WebAssembly (WASM) module inside a dedicated Web Worker for interactive gameplay and manual analysis. **Background analysis jobs** are the one server-side exception: Trigger.dev workers run native Stockfish via UCI for post-game and backfill analysis only.
 
 ---
 
-## Responsibilities
+## Client vs worker
+
+| Context | Engine | Used for |
+|---------|--------|----------|
+| Browser | `stockfish.wasm` via Web Worker | Play, coach, manual Fast/Standard re-analysis |
+| Trigger.dev worker | Native Stockfish binary (`STOCKFISH_PATH`) | Post-game background analysis, backfill CLI |
+
+The Next.js API layer stores analysis results but does not run Stockfish during normal request handling.
+
+---
+
+## Responsibilities (client)
 
 | Capability | Used In |
 |------------|---------|

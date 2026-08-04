@@ -13,6 +13,10 @@ import { analysisRepository } from "@/server/repositories/analysis.repository";
 import { chatRepository } from "@/server/repositories/chat.repository";
 import { coachMomentRepository } from "@/server/repositories/coach-moment.repository";
 import { gameRepository } from "@/server/repositories/game.repository";
+import {
+  getParticipantColor,
+  isGameParticipant,
+} from "@/server/services/game-participant";
 import { z } from "zod";
 
 const gameSummaryResponseSchema = z.object({
@@ -46,7 +50,7 @@ export const coachingService = {
     ensureAIConfigured();
 
     const game = await gameRepository.findById(gameId);
-    if (!game || game.userId !== userId) {
+    if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
     if (game.mode !== "AI_OPPONENT") {
@@ -121,7 +125,7 @@ export const coachingService = {
     ensureAIConfigured();
 
     const game = await gameRepository.findById(input.gameId);
-    if (!game || game.userId !== userId) {
+    if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
 
@@ -174,11 +178,11 @@ export const coachingService = {
     ensureAIConfigured();
 
     const game = await gameRepository.findById(gameId);
-    if (!game || game.userId !== userId) {
+    if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
 
-    const analysis = await analysisRepository.findByGameId(gameId);
+    const analysis = await analysisRepository.findByGameAndUser(gameId, userId);
     if (!analysis) {
       throw new ApiError("NOT_FOUND", "Analysis not found", 404);
     }
@@ -206,6 +210,11 @@ export const coachingService = {
       .slice(0, 5);
 
     const provider = getAIProvider() as GeminiProvider;
+    const playerColor =
+      game.mode === "PVP"
+        ? (getParticipantColor(game, userId) ?? game.playerColor)
+        : game.playerColor;
+
     const prompt = buildGameSummaryPrompt({
       pgn: game.pgn ?? "",
       accuracy: analysis.accuracy,
@@ -213,7 +222,7 @@ export const coachingService = {
       blunderCount: analysis.blunderCount,
       mistakeCount: analysis.mistakeCount,
       brilliantCount: analysis.brilliantCount,
-      playerColor: game.playerColor,
+      playerColor,
       result: game.result,
       keyMoments,
     });
@@ -221,7 +230,7 @@ export const coachingService = {
     const raw = await provider.generateText(prompt, 0.4);
     const parsed = parseGeminiResponse(raw, gameSummaryResponseSchema);
 
-    await analysisRepository.updateSummary(gameId, parsed.summary);
+    await analysisRepository.updateSummary(gameId, userId, parsed.summary);
 
     return {
       ...parsed,

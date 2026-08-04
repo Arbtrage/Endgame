@@ -12,6 +12,8 @@ export const saveAnalysisSchema = z.object({
   evalGraph: z.array(z.unknown()),
   summary: z.string().optional(),
   keyMoments: z.array(z.unknown()).optional(),
+  analysisMode: z.enum(["fast", "standard"]).optional(),
+  analysisDepth: z.number().int().positive().optional(),
 });
 
 export const importPgnSchema = z.object({

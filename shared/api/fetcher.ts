@@ -430,6 +430,9 @@ export function getCoachChatHistory(sessionId?: string) {
 export type StoredAnalysis = {
   id: string;
   gameId: string;
+  userId: string;
+  analysisMode: string | null;
+  analysisDepth: number | null;
   accuracy: number;
   acpl: number;
   totalMoves: number;
@@ -449,6 +452,21 @@ export function getAnalysis(gameId: string) {
   return fetchJson<StoredAnalysis | null>(`/api/analysis/${gameId}`);
 }
 
+export type AnalysisJobStatus =
+  | "idle"
+  | "pending"
+  | "running"
+  | "done"
+  | "failed";
+
+export function getAnalysisStatus(gameId: string) {
+  return fetchJson<{
+    status: AnalysisJobStatus;
+    analysis?: StoredAnalysis;
+    errorMessage?: string | null;
+  }>(`/api/analysis/${gameId}/status`);
+}
+
 export function saveAnalysis(
   gameId: string,
   data: {
@@ -461,6 +479,8 @@ export function saveAnalysis(
     brilliantCount: number;
     moveAnalysis: unknown[];
     evalGraph: unknown[];
+    analysisMode?: "fast" | "standard";
+    analysisDepth?: number;
   },
 ) {
   return fetchJson<StoredAnalysis>(`/api/analysis/${gameId}`, {

@@ -1,5 +1,13 @@
 import type { MoveClassification } from "@/shared/engine/classification";
 
+export type AnalysisMoveInput = {
+  moveNumber: number;
+  san: string;
+  uci: string;
+  fen: string;
+  color: string;
+};
+
 export type AnalyzedMove = {
   moveNumber: number;
   san: string;
@@ -19,7 +27,14 @@ export type EvalGraphPoint = {
   eval: number;
 };
 
-export type AnalysisResult = {
+export type AnalysisProgress = {
+  current: number;
+  total: number;
+  phase: "analyzing" | "complete" | "cancelled" | "error";
+  message?: string;
+};
+
+export type AnalyzeGameMovesResult = {
   accuracy: number;
   acpl: number;
   totalMoves: number;
@@ -29,13 +44,6 @@ export type AnalysisResult = {
   brilliantCount: number;
   moveAnalysis: AnalyzedMove[];
   evalGraph: EvalGraphPoint[];
-  analysisMode?: "fast" | "standard";
-  analysisDepth?: number;
-};
-
-export type AnalysisProgress = {
-  current: number;
-  total: number;
-  phase: "analyzing" | "complete" | "cancelled" | "error";
-  message?: string;
+  analysisMode: import("./profiles").AnalysisMode;
+  analysisDepth: number;
 };

@@ -34,6 +34,13 @@ enum GameResult {
   ABANDONED
 }
 
+enum AnalysisJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id                 String   @id @default(cuid())
   name               String?
@@ -58,6 +65,8 @@ model User {
   trainingLessons TrainingLesson[]
   lessonProgress  LessonProgress[]
   weeklyReports   WeeklyReport[]
+  analyses        Analysis[]
+  analysisJobs    AnalysisJob[]
 
   @@map("users")
 }
@@ -154,7 +163,8 @@ model Game {
   moves        Move[]
   messages     GameMessage[]
   coachMoments CoachMoment[]
-  analysis     Analysis?
+  analyses     Analysis[]
+  analysisJobs AnalysisJob[]
   invite       GameInvite?
 
   @@index([userId, createdAt(sort: Desc)])
@@ -278,7 +288,10 @@ enum LessonTopic {
 
 model Analysis {
   id              String   @id @default(cuid())
-  gameId          String   @unique
+  gameId          String
+  userId          String
+  analysisMode    String?
+  analysisDepth   Int?
   accuracy        Float
   acpl            Float
   totalMoves      Int
@@ -294,8 +307,32 @@ model Analysis {
   updatedAt       DateTime @updatedAt
 
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([gameId, userId])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("analyses")
+}
+
+model AnalysisJob {
+  id           String            @id @default(cuid())
+  gameId       String
+  userId       String
+  status       AnalysisJobStatus @default(PENDING)
+  analysisMode String            @default("standard")
+  triggerRunId String?
+  errorMessage String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  completedAt  DateTime?
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@index([status])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("analysis_jobs")
 }
 
 model TrainingLesson {

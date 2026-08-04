@@ -15,15 +15,28 @@ import {
   triggerMoveMade,
 } from "@/server/realtime/pusher";
 import { gameMessageRepository } from "@/server/repositories/game-message.repository";
+import { scheduleBackgroundAnalysisForGame } from "@/server/analysis/schedule-background-analysis";
 
-function mapGame(game: NonNullable<Awaited<ReturnType<typeof gameRepository.findById>>>) {
+function mapGame(
+  game: NonNullable<Awaited<ReturnType<typeof gameRepository.findById>>>,
+  userId?: string,
+) {
+  const playerColor =
+    game.mode === "PVP" && userId
+      ? game.whiteUserId === userId
+        ? "white"
+        : game.blackUserId === userId
+          ? "black"
+          : game.playerColor
+      : game.playerColor;
+
   return {
     id: game.id,
     mode: game.mode,
     status: game.status,
     result: game.result,
     resultReason: game.resultReason,
-    playerColor: game.playerColor,
+    playerColor,
     stockfishLevel: game.stockfishLevel,
     aiPersonality: game.aiPersonality,
     moveCount: game.moveCount,
@@ -194,7 +207,7 @@ export const gameService = {
     if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
-    return mapGame(game);
+    return mapGame(game, userId);
   },
 
   async getGameForSpectator(gameId: string) {
@@ -313,7 +326,12 @@ export const gameService = {
       });
     }
 
-    return mapGame({ ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser });
+    void scheduleBackgroundAnalysisForGame(gameId);
+
+    return mapGame(
+      { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },
+      userId,
+    );
   },
 
   async resignGame(userId: string, gameId: string) {
@@ -350,7 +368,12 @@ export const gameService = {
       });
     }
 
-    return mapGame({ ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser });
+    void scheduleBackgroundAnalysisForGame(gameId);
+
+    return mapGame(
+      { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },
+      userId,
+    );
   },
 
   async offerDraw(userId: string, gameId: string) {
@@ -407,7 +430,12 @@ export const gameService = {
       finalFen: updated.finalFen,
     });
 
-    return mapGame({ ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser });
+    void scheduleBackgroundAnalysisForGame(gameId);
+
+    return mapGame(
+      { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },
+      userId,
+    );
   },
 
   async declineDraw(userId: string, gameId: string) {

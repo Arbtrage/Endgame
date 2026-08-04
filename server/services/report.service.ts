@@ -149,7 +149,7 @@ export const reportService = {
 
     const analyses = await prisma.analysis.findMany({
       where: {
-        game: { userId },
+        userId,
         createdAt: { gte: weekStart, lte: weekEnd },
       },
     });

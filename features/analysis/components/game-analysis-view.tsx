@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import { ArrowLeft, BarChart3, RefreshCw } from "lucide-react";
 import { AnalysisBoard } from "@/features/analysis/components/analysis-board";
 import { AnalysisProgressBar } from "@/features/analysis/components/analysis-progress";
 import { AnalysisSummary } from "@/features/analysis/components/analysis-summary";
@@ -11,7 +11,13 @@ import { EvalGraph } from "@/features/analysis/components/eval-graph";
 import { ExplainMovePanel } from "@/features/analysis/components/explain-move-panel";
 import { GameSummaryPanel } from "@/features/analysis/components/game-summary-panel";
 import { MoveAnalysisList } from "@/features/analysis/components/move-analysis-list";
-import { analyzeGame } from "@/features/analysis/engine/analysis-engine";
+import {
+  analyzeGame,
+  type AnalysisMode,
+} from "@/features/analysis/engine/analysis-engine";
+import {
+  useBackgroundAnalysisStatus,
+} from "@/features/analysis/hooks/use-background-analysis-status";
 import type { AnalysisResult, AnalyzedMove, AnalysisProgress } from "@/features/analysis/types";
 import {
   explainMove,
@@ -22,6 +28,14 @@ import {
 } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button } from "@/shared/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { toast } from "sonner";
 
@@ -29,18 +43,37 @@ type GameAnalysisViewProps = {
   gameId: string;
 };
 
+function storedToResult(stored: NonNullable<Awaited<ReturnType<typeof getAnalysis>>>): AnalysisResult {
+  return {
+    accuracy: stored.accuracy,
+    acpl: stored.acpl,
+    totalMoves: stored.totalMoves,
+    blunderCount: stored.blunderCount,
+    mistakeCount: stored.mistakeCount,
+    inaccuracyCount: stored.inaccuracyCount,
+    brilliantCount: stored.brilliantCount,
+    moveAnalysis: stored.moveAnalysis as AnalyzedMove[],
+    evalGraph: stored.evalGraph as AnalysisResult["evalGraph"],
+    analysisMode: (stored.analysisMode as AnalysisMode | null) ?? undefined,
+    analysisDepth: stored.analysisDepth ?? undefined,
+  };
+}
+
 export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
   const queryClient = useQueryClient();
   const abortRef = useRef<AbortController | null>(null);
 
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [progress, setProgress] = useState<AnalysisProgress | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [reanalyzeOpen, setReanalyzeOpen] = useState(false);
   const [selectedMoveNumber, setSelectedMoveNumber] = useState<number | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [explaining, setExplaining] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const bgStatus = useBackgroundAnalysisStatus(gameId);
 
   const { data: game, isLoading: gameLoading } = useQuery({
     queryKey: queryKeys.games.detail(gameId),
@@ -51,68 +84,76 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
     queryKey: queryKeys.analysis.detail(gameId),
     queryFn: () => getAnalysis(gameId),
     enabled: !!game,
+    refetchInterval:
+      bgStatus === "running" || bgStatus === "queued" ? 3000 : false,
   });
 
-  const runAnalysis = useCallback(async () => {
-    if (!game?.moves.length) return;
-
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setAnalyzing(true);
-    setProgress({ current: 0, total: game.moves.length, phase: "analyzing" });
-
-    try {
-      const result = await analyzeGame({
-        moves: game.moves,
-        playerColor: game.playerColor as "white" | "black",
-        signal: controller.signal,
-        onProgress: setProgress,
+  useEffect(() => {
+    if (bgStatus === "done") {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.analysis.detail(gameId),
       });
-
-      setAnalysis(result);
-      await saveAnalysis(gameId, result);
-      queryClient.invalidateQueries({ queryKey: queryKeys.analysis.detail(gameId) });
-    } catch (error) {
-      if (error instanceof Error && error.message !== "Analysis cancelled") {
-        toast.error("Analysis failed");
-      }
-    } finally {
-      setAnalyzing(false);
-      setProgress(null);
     }
-  }, [game, gameId, queryClient]);
+  }, [bgStatus, gameId, queryClient]);
+
+  const runAnalysis = useCallback(
+    async (mode: AnalysisMode) => {
+      if (!game?.moves.length) return;
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setAnalyzing(true);
+      setProgress({ current: 0, total: game.moves.length, phase: "analyzing" });
+
+      try {
+        const result = await analyzeGame({
+          moves: game.moves,
+          playerColor: game.playerColor as "white" | "black",
+          signal: controller.signal,
+          analysisMode: mode,
+          onProgress: setProgress,
+        });
+
+        setAnalysis(result);
+        setAnalysisMode(result.analysisMode);
+        await saveAnalysis(gameId, {
+          accuracy: result.accuracy,
+          acpl: result.acpl,
+          totalMoves: result.totalMoves,
+          blunderCount: result.blunderCount,
+          mistakeCount: result.mistakeCount,
+          inaccuracyCount: result.inaccuracyCount,
+          brilliantCount: result.brilliantCount,
+          moveAnalysis: result.moveAnalysis,
+          evalGraph: result.evalGraph,
+          analysisMode: result.analysisMode,
+          analysisDepth: result.analysisDepth,
+        });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.analysis.detail(gameId),
+        });
+      } catch (error) {
+        if (error instanceof Error && error.message !== "Analysis cancelled") {
+          toast.error("Analysis failed");
+        }
+      } finally {
+        setAnalyzing(false);
+        setProgress(null);
+        setReanalyzeOpen(false);
+      }
+    },
+    [game, gameId, queryClient],
+  );
 
   useEffect(() => {
-    if (storedAnalysis && !analysis) {
-      setAnalysis({
-        accuracy: storedAnalysis.accuracy,
-        acpl: storedAnalysis.acpl,
-        totalMoves: storedAnalysis.totalMoves,
-        blunderCount: storedAnalysis.blunderCount,
-        mistakeCount: storedAnalysis.mistakeCount,
-        inaccuracyCount: storedAnalysis.inaccuracyCount,
-        brilliantCount: storedAnalysis.brilliantCount,
-        moveAnalysis: storedAnalysis.moveAnalysis as AnalyzedMove[],
-        evalGraph: storedAnalysis.evalGraph as AnalysisResult["evalGraph"],
-      });
+    if (storedAnalysis) {
+      setAnalysis(storedToResult(storedAnalysis));
+      setAnalysisMode((storedAnalysis.analysisMode as AnalysisMode | null) ?? null);
       setSummary(storedAnalysis.summary);
     }
-  }, [storedAnalysis, analysis]);
-
-  useEffect(() => {
-    if (
-      game &&
-      game.status === "COMPLETED" &&
-      !storedAnalysis &&
-      !analysisLoading &&
-      !analysis &&
-      !analyzing
-    ) {
-      void runAnalysis();
-    }
-  }, [game, storedAnalysis, analysisLoading, analysis, analyzing, runAnalysis]);
+  }, [storedAnalysis]);
 
   const selectedMove = analysis?.moveAnalysis.find(
     (m) => m.moveNumber === selectedMoveNumber,
@@ -123,6 +164,8 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
     game?.moves[game.moves.length - 1]?.fen ??
     game?.finalFen ??
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+  const backgroundActive = bgStatus === "running" || bgStatus === "queued";
 
   async function handleExplain() {
     if (!selectedMove || !game) return;
@@ -175,33 +218,61 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
 
   return (
     <div className="flex min-h-0 flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Button
-          render={<Link href="/analyze" />}
-          nativeButton={false}
-          variant="ghost"
-          size="sm"
-        >
-          <ArrowLeft className="size-4" />
-          Back
-        </Button>
-        <div className="flex items-center gap-2">
-          <BarChart3 className="size-4 text-primary" />
-          <h1 className="text-lg font-semibold">Game analysis</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button
+            render={<Link href="/analyze" />}
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="size-4 text-primary" />
+            <h1 className="text-lg font-semibold">Game analysis</h1>
+          </div>
         </div>
+        {analysis ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={analyzing || backgroundActive}
+            onClick={() => setReanalyzeOpen(true)}
+          >
+            <RefreshCw className="size-4" />
+            Re-analyze
+          </Button>
+        ) : null}
       </div>
 
-      {analyzing && progress ? (
+      {(analyzing && progress) || backgroundActive ? (
         <AnalysisProgressBar
-          progress={progress}
-          onCancel={() => abortRef.current?.abort()}
+          progress={
+            progress ?? {
+              current: 0,
+              total: game.moves.length,
+              phase: "analyzing",
+              message: backgroundActive
+                ? "Analyzing in background…"
+                : undefined,
+            }
+          }
+          onCancel={
+            analyzing ? () => abortRef.current?.abort() : undefined
+          }
         />
       ) : null}
 
       {analysis ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="flex flex-col gap-4">
-            <AnalysisSummary analysis={analysis} />
+            <AnalysisSummary
+              analysis={analysis}
+              analysisMode={analysisMode ?? analysis.analysisMode}
+            />
             <EvalGraph
               points={analysis.evalGraph}
               selectedMoveNumber={selectedMoveNumber}
@@ -239,16 +310,49 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
             </div>
           </div>
         </div>
-      ) : !analyzing ? (
+      ) : !analyzing && !backgroundActive ? (
         <div className="rounded-xl border border-border/60 p-6 text-center">
           <p className="text-sm text-muted-foreground">
             No analysis available for this game.
           </p>
-          <Button type="button" className="mt-4" onClick={() => void runAnalysis()}>
-            Run analysis
-          </Button>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button type="button" onClick={() => void runAnalysis("standard")}>
+              Run standard analysis
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void runAnalysis("fast")}
+            >
+              Run fast analysis
+            </Button>
+          </div>
         </div>
       ) : null}
+
+      <Dialog open={reanalyzeOpen} onOpenChange={setReanalyzeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Re-analyze game</DialogTitle>
+            <DialogDescription>
+              Choose analysis depth. This replaces your saved analysis for this
+              game.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button type="button" onClick={() => void runAnalysis("standard")}>
+              Standard (~45–90s)
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void runAnalysis("fast")}
+            >
+              Fast (~20–40s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

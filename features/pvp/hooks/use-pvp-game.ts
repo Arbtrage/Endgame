@@ -267,7 +267,7 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     }
 
     return true;
-  }, [chessGame, gameId, playerColor, setLifecycle, setPhase]);
+  }, [chessGame, gameId, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const applyMove = useCallback(
     async (from: string, to: string, promotion?: string) => {
@@ -353,7 +353,7 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     } catch {
       toast.error("Failed to save resignation");
     }
-  }, [gameId, playerColor, setLifecycle, setPhase]);
+  }, [gameId, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const handleOfferDraw = useCallback(async () => {
     const userId = session?.user?.id;
@@ -377,7 +377,7 @@ export function usePvpGame({ gameId }: { gameId: string }) {
     } catch {
       toast.error("Failed to accept draw");
     }
-  }, [gameId, playerColor, setLifecycle, setPhase]);
+  }, [gameId, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const handleDeclineDraw = useCallback(async () => {
     try {
@@ -462,7 +462,7 @@ export function usePvpGame({ gameId }: { gameId: string }) {
         toast.error("Failed to save game result");
       }
     },
-    [chessGame, gameId, lifecycle.result, playerColor, setLifecycle, setPhase],
+    [chessGame, gameId, lifecycle.result, playerColor, session?.user?.id, setLifecycle, setPhase],
   );
 
   const clock = useGameClock({

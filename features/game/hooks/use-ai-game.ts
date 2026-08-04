@@ -22,6 +22,7 @@ import { requestAiMoveWithFallback } from "@/features/game/engine/ai-move-client
 import { useGameSessionReset } from "@/features/game/hooks/use-game-session";
 import { useGameClock } from "@/features/game/hooks/use-game-clock";
 import { useMoveSync } from "@/features/game/hooks/use-move-sync";
+import { useSession } from "@/shared/auth/auth-client";
 
 type UseAiGameOptions = {
   gameId: string;
@@ -29,6 +30,7 @@ type UseAiGameOptions = {
 };
 
 export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
+  const { data: session } = useSession();
   const {
     playerColor,
     aiPersonality,
@@ -154,7 +156,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
     }
 
     return true;
-  }, [chessGame, gameId, persist, playerColor, setLifecycle, setPhase]);
+  }, [chessGame, gameId, persist, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const requestOpponentMove = useCallback(async () => {
     if (processingRef.current || phase === "game_over") return;
@@ -357,7 +359,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
         toast.error("Failed to save resignation");
       }
     }
-  }, [gameId, persist, playerColor, setLifecycle, setPhase]);
+  }, [gameId, persist, playerColor, session?.user?.id, setLifecycle, setPhase]);
 
   const getLegalMovesForSquare = useCallback(
     (square: string) => chessGame.getLegalMoves(square),
@@ -404,7 +406,7 @@ export function useAiGame({ gameId, persist = true }: UseAiGameOptions) {
         }
       }
     },
-    [chessGame, gameId, lifecycle.result, persist, playerColor, setLifecycle, setPhase],
+    [chessGame, gameId, lifecycle.result, persist, playerColor, session?.user?.id, setLifecycle, setPhase],
   );
 
   const clock = useGameClock({

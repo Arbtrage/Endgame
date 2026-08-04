@@ -1,6 +1,11 @@
 import { ApiError } from "@/server/api/response";
 import { analysisRepository } from "@/server/repositories/analysis.repository";
+import { analysisJobRepository } from "@/server/repositories/analysis-job.repository";
 import { gameRepository } from "@/server/repositories/game.repository";
+import {
+  getParticipantColor,
+  isGameParticipant,
+} from "@/server/services/game-participant";
 import { Chess } from "chess.js";
 import type { Prisma } from "@prisma/client";
 
@@ -16,14 +21,21 @@ export type SaveAnalysisInput = {
   evalGraph: unknown;
   summary?: string;
   keyMoments?: unknown;
+  analysisMode?: "fast" | "standard";
+  analysisDepth?: number;
 };
 
 function mapAnalysis(
-  analysis: NonNullable<Awaited<ReturnType<typeof analysisRepository.findByGameId>>>,
+  analysis: NonNullable<
+    Awaited<ReturnType<typeof analysisRepository.findByGameAndUser>>
+  >,
 ) {
   return {
     id: analysis.id,
     gameId: analysis.gameId,
+    userId: analysis.userId,
+    analysisMode: analysis.analysisMode,
+    analysisDepth: analysis.analysisDepth,
     accuracy: analysis.accuracy,
     acpl: analysis.acpl,
     totalMoves: analysis.totalMoves,
@@ -40,14 +52,24 @@ function mapAnalysis(
   };
 }
 
+function resolveViewerPlayerColor(
+  game: NonNullable<Awaited<ReturnType<typeof gameRepository.findById>>>,
+  userId: string,
+): string {
+  if (game.mode === "PVP") {
+    return getParticipantColor(game, userId) ?? game.playerColor;
+  }
+  return game.playerColor;
+}
+
 export const analysisService = {
   async getAnalysis(userId: string, gameId: string) {
     const game = await gameRepository.findById(gameId);
-    if (!game || game.userId !== userId) {
+    if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
 
-    const analysis = await analysisRepository.findByGameId(gameId);
+    const analysis = await analysisRepository.findByGameAndUser(gameId, userId);
     if (!analysis) {
       return null;
     }
@@ -57,14 +79,16 @@ export const analysisService = {
 
   async saveAnalysis(userId: string, gameId: string, input: SaveAnalysisInput) {
     const game = await gameRepository.findById(gameId);
-    if (!game || game.userId !== userId) {
+    if (!game || !isGameParticipant(game, userId)) {
       throw new ApiError("NOT_FOUND", "Game not found", 404);
     }
     if (game.status !== "COMPLETED") {
       throw new ApiError("CONFLICT", "Only completed games can be analyzed", 409);
     }
 
-    const analysis = await analysisRepository.upsert(gameId, {
+    resolveViewerPlayerColor(game, userId);
+
+    const analysis = await analysisRepository.upsert(gameId, userId, {
       accuracy: input.accuracy,
       acpl: input.acpl,
       totalMoves: input.totalMoves,
@@ -76,6 +100,8 @@ export const analysisService = {
       evalGraph: input.evalGraph as Prisma.InputJsonValue,
       summary: input.summary ?? null,
       keyMoments: (input.keyMoments ?? null) as Prisma.InputJsonValue,
+      analysisMode: input.analysisMode ?? null,
+      analysisDepth: input.analysisDepth ?? null,
     });
 
     return mapAnalysis(analysis);
@@ -161,11 +187,50 @@ export const analysisService = {
       gameId: a.gameId,
       accuracy: a.accuracy,
       acpl: a.acpl,
+      analysisMode: a.analysisMode,
       game: {
         ...a.game,
+        playerColor:
+          a.game.mode === "PVP"
+            ? a.game.whiteUserId === userId
+              ? "white"
+              : a.game.blackUserId === userId
+                ? "black"
+                : a.game.playerColor
+            : a.game.playerColor,
         completedAt: a.game.completedAt?.toISOString() ?? null,
         createdAt: a.game.createdAt.toISOString(),
       },
     }));
+  },
+
+  async getAnalysisJobStatus(userId: string, gameId: string) {
+    const game = await gameRepository.findById(gameId);
+    if (!game || !isGameParticipant(game, userId)) {
+      throw new ApiError("NOT_FOUND", "Game not found", 404);
+    }
+
+    const analysis = await analysisRepository.findByGameAndUser(gameId, userId);
+    if (analysis) {
+      return { status: "done" as const, analysis: mapAnalysis(analysis) };
+    }
+
+    const job = await analysisJobRepository.findByGameAndUser(gameId, userId);
+    if (!job) {
+      return { status: "idle" as const };
+    }
+
+    switch (job.status) {
+      case "PENDING":
+        return { status: "pending" as const };
+      case "RUNNING":
+        return { status: "running" as const };
+      case "FAILED":
+        return { status: "failed" as const, errorMessage: job.errorMessage };
+      case "COMPLETED":
+        return { status: "done" as const };
+      default:
+        return { status: "idle" as const };
+    }
   },
 };

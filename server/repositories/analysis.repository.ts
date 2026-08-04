@@ -2,12 +2,15 @@ import { prisma } from "@/shared/db/prisma";
 import type { Prisma } from "@prisma/client";
 
 export const analysisRepository = {
-  findByGameId(gameId: string) {
-    return prisma.analysis.findUnique({ where: { gameId } });
+  findByGameAndUser(gameId: string, userId: string) {
+    return prisma.analysis.findUnique({
+      where: { gameId_userId: { gameId, userId } },
+    });
   },
 
   upsert(
     gameId: string,
+    userId: string,
     data: {
       accuracy: number;
       acpl: number;
@@ -20,25 +23,27 @@ export const analysisRepository = {
       evalGraph: Prisma.InputJsonValue;
       summary?: string | null;
       keyMoments?: Prisma.InputJsonValue;
+      analysisMode?: string | null;
+      analysisDepth?: number | null;
     },
   ) {
     return prisma.analysis.upsert({
-      where: { gameId },
-      create: { gameId, ...data },
+      where: { gameId_userId: { gameId, userId } },
+      create: { gameId, userId, ...data },
       update: data,
     });
   },
 
-  updateSummary(gameId: string, summary: string) {
+  updateSummary(gameId: string, userId: string, summary: string) {
     return prisma.analysis.update({
-      where: { gameId },
+      where: { gameId_userId: { gameId, userId } },
       data: { summary },
     });
   },
 
   findByUserId(userId: string, limit = 50) {
     return prisma.analysis.findMany({
-      where: { game: { userId } },
+      where: { userId },
       include: {
         game: {
           select: {
@@ -46,6 +51,8 @@ export const analysisRepository = {
             mode: true,
             result: true,
             playerColor: true,
+            whiteUserId: true,
+            blackUserId: true,
             moveCount: true,
             completedAt: true,
             createdAt: true,
@@ -59,10 +66,20 @@ export const analysisRepository = {
 
   aggregateWeaknesses(userId: string, minGames = 5) {
     return prisma.analysis.findMany({
-      where: { game: { userId, status: "COMPLETED" } },
+      where: {
+        userId,
+        game: { status: "COMPLETED" },
+      },
       select: {
         moveAnalysis: true,
-        game: { select: { playerColor: true } },
+        game: {
+          select: {
+            playerColor: true,
+            whiteUserId: true,
+            blackUserId: true,
+            mode: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: 20,

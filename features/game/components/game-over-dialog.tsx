@@ -28,6 +28,7 @@ type GameOverDialogProps = {
   playAgainLabel?: string;
   playAgainDisabled?: boolean;
   playAgainHint?: string;
+  analysisHint?: string;
 };
 
 export function GameOverDialog({
@@ -41,6 +42,7 @@ export function GameOverDialog({
   playAgainLabel = "Play again",
   playAgainDisabled = false,
   playAgainHint,
+  analysisHint,
 }: GameOverDialogProps) {
   const resultLabel = getResultLabel(lifecycle.result, playerColor);
 
@@ -60,6 +62,9 @@ export function GameOverDialog({
         </DialogHeader>
         {playAgainHint ? (
           <p className="text-sm text-muted-foreground">{playAgainHint}</p>
+        ) : null}
+        {analysisHint ? (
+          <p className="text-xs text-muted-foreground">{analysisHint}</p>
         ) : null}
         <DialogFooter className="grid grid-cols-2 gap-2">
           <Button type="button" className="w-full" onClick={() => onOpenChange(false)}>

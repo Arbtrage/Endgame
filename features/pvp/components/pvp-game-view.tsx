@@ -6,6 +6,10 @@ import { useState } from "react";
 import { ChessPlayArea } from "@/features/game/components/chess-play-area";
 import { GameHeader } from "@/features/game/components/game-header";
 import { GameOverDialog } from "@/features/game/components/game-over-dialog";
+import {
+  getAnalysisBackgroundHint,
+  useBackgroundAnalysisStatus,
+} from "@/features/analysis/hooks/use-background-analysis-status";
 import { GamePlayLayout } from "@/features/game/components/game-play-layout";
 import { GamePlaySkeleton } from "@/features/game/components/game-play-skeleton";
 import { GameResultBanner } from "@/features/game/components/game-result-banner";
@@ -46,6 +50,7 @@ export function PvpGameView({ gameId }: PvpGameViewProps) {
     loadedAsCompleted: game.loadedAsCompleted,
     ready: gameReady,
   });
+  const bgAnalysisStatus = useBackgroundAnalysisStatus(gameId);
 
   useMoveSounds(game.loading ? [] : game.moves);
   useReplayKeyboard({
@@ -193,6 +198,7 @@ export function PvpGameView({ gameId }: PvpGameViewProps) {
         }
         playAgainDisabled={rematchSent && !game.rematchInviteId}
         playAgainHint={rematchLabel}
+        analysisHint={getAnalysisBackgroundHint(bgAnalysisStatus)}
       />
     </div>
   );
