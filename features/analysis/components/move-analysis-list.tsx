@@ -22,7 +22,7 @@ export function MoveAnalysisList({
   }
 
   return (
-    <div className="overflow-y-auto">
+    <div className="h-full min-h-0 overflow-y-auto">
       <ul className="divide-y divide-border/50">
         {moves.map((move) => (
           <li key={move.moveNumber}>

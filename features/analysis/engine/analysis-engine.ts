@@ -6,6 +6,7 @@ import {
   classifyMove,
 } from "@/shared/engine/classification";
 import { getStockfishEngine } from "@/shared/engine/stockfish-engine";
+import type { Evaluation, SearchOptions } from "@/shared/engine/types";
 import type {
   AnalysisProgress,
   AnalysisResult,
@@ -15,6 +16,8 @@ import type {
 
 const STARTING_FEN =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+const ANALYSIS_MAX_MOVE_TIME_MS = 3000;
 
 export type AnalyzeGameOptions = {
   moves: GameMove[];
@@ -42,14 +45,43 @@ function fenBeforeMove(moves: GameMove[], moveIndex: number): string {
   return moves[moveIndex - 1]?.fen ?? STARTING_FEN;
 }
 
+function positionCacheKey(fen: string, uciMoves: string[]): string {
+  return `${fen}|${uciMoves.join(",")}`;
+}
+
+function buildSearchOptions(depth: number): SearchOptions {
+  return {
+    depth,
+    maxMoveTime: ANALYSIS_MAX_MOVE_TIME_MS,
+    multiThread: true,
+  };
+}
+
 export async function analyzeGame(
   options: AnalyzeGameOptions,
 ): Promise<AnalysisResult> {
   const { moves, playerColor, onProgress, signal } = options;
   const depth = options.depth ?? getAnalysisDepth();
-  const moveTime = depth >= 18 ? 5000 : 3000;
+  const searchOptions = buildSearchOptions(depth);
   const engine = getStockfishEngine();
   await engine.ready();
+
+  const evalCache = new Map<string, Evaluation>();
+
+  async function cachedEvaluate(
+    fen: string,
+    uciMoves: string[],
+  ): Promise<Evaluation> {
+    const key = positionCacheKey(fen, uciMoves);
+    const cached = evalCache.get(key);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await engine.evaluate(fen, uciMoves, searchOptions);
+    evalCache.set(key, result);
+    return result;
+  }
 
   const analyzedMoves: AnalyzedMove[] = [];
   const evalGraph: EvalGraphPoint[] = [{ moveNumber: 0, eval: 0 }];
@@ -76,33 +108,34 @@ export async function analyzeGame(
       message: `Analyzing move ${i + 1} of ${moves.length}`,
     });
 
-    const beforeEval = await engine.evaluate(fenBefore, priorUci, {
-      depth,
-      moveTime,
-    });
+    const best = await engine.getBestMove(fenBefore, priorUci, searchOptions);
+    const beforeEvalCp = best.eval ?? (i === 0 ? 0 : evalGraph[evalGraph.length - 1]!.eval);
+    const isBestMove = move.uci === best.uci;
 
-    const best = await engine.getBestMove(fenBefore, priorUci, {
-      depth,
-      moveTime,
-    });
+    let bestEvalCp: number;
+    let afterEvalCp: number;
 
-    const bestEval = await engine.evaluate(fenBefore, [...priorUci, best.uci], {
-      depth,
-      moveTime,
-    });
+    if (isBestMove) {
+      const afterEval = await cachedEvaluate(fenBefore, [...priorUci, move.uci]);
+      afterEvalCp = afterEval.cp;
+      bestEvalCp = afterEvalCp;
+    } else {
+      const bestLineEval = await cachedEvaluate(fenBefore, [...priorUci, best.uci]);
+      bestEvalCp = bestLineEval.cp;
+      const afterEval = await cachedEvaluate(fenBefore, [...priorUci, move.uci]);
+      afterEvalCp = afterEval.cp;
+    }
 
-    const afterEval = await engine.evaluate(fenBefore, [...priorUci, move.uci], {
-      depth,
-      moveTime,
-    });
-
-    const cpLoss = calculateCpLoss(bestEval.cp, afterEval.cp, move.color as "white" | "black");
-    const evalGain = calculateEvalGain(
-      beforeEval.cp,
-      afterEval.cp,
+    const cpLoss = calculateCpLoss(
+      bestEvalCp,
+      afterEvalCp,
       move.color as "white" | "black",
     );
-    const isBestMove = move.uci === best.uci;
+    const evalGain = calculateEvalGain(
+      beforeEvalCp,
+      afterEvalCp,
+      move.color as "white" | "black",
+    );
     const classification = classifyMove({ cpLoss, isBestMove, evalGain });
 
     analyzedMoves.push({
@@ -111,8 +144,8 @@ export async function analyzeGame(
       uci: move.uci,
       fen: move.fen,
       color: move.color as "white" | "black",
-      evalBefore: beforeEval.cp,
-      evalAfter: afterEval.cp,
+      evalBefore: beforeEvalCp,
+      evalAfter: afterEvalCp,
       bestMove: best.uci,
       classification,
       cpLoss,
@@ -121,7 +154,7 @@ export async function analyzeGame(
 
     evalGraph.push({
       moveNumber: move.moveNumber,
-      eval: afterEval.cp,
+      eval: afterEvalCp,
     });
   }
 

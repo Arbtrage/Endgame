@@ -174,7 +174,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-4">
       <div className="flex items-center gap-3">
         <Button
           render={<Link href="/analyze" />}
@@ -199,8 +199,8 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
       ) : null}
 
       {analysis ? (
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex min-h-0 flex-col gap-4">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="flex flex-col gap-4">
             <AnalysisSummary analysis={analysis} />
             <EvalGraph
               points={analysis.evalGraph}
@@ -218,7 +218,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
               onGenerate={handleGenerateSummary}
             />
           </div>
-          <div className="flex min-h-0 flex-col gap-4 overflow-hidden rounded-xl border border-border/60 bg-card">
+          <div className="flex flex-col gap-4 overflow-hidden rounded-xl border border-border/60 bg-card lg:sticky lg:top-0 lg:h-[calc(100dvh-6rem)] lg:min-h-0 lg:self-start">
             <div className="min-h-0 flex-1 overflow-hidden">
               <MoveAnalysisList
                 moves={analysis.moveAnalysis}

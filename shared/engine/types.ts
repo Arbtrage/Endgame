@@ -1,7 +1,11 @@
 export interface SearchOptions {
   depth?: number;
   moveTime?: number;
+  /** Safety cap (ms) when searching by depth — stops the engine if depth is slow. */
+  maxMoveTime?: number;
   skillLevel?: number;
+  /** Use multiple Stockfish threads (analysis only). */
+  multiThread?: boolean;
 }
 
 export interface EngineMove {

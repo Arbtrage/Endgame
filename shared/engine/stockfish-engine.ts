@@ -67,10 +67,19 @@ function parseInfoLine(line: string): Partial<EngineMove> {
   return info;
 }
 
+function getAnalysisThreadCount(): number {
+  if (typeof SharedArrayBuffer === "undefined") {
+    return 1;
+  }
+  const cores = typeof navigator !== "undefined" ? navigator.hardwareConcurrency : 2;
+  return Math.min(4, Math.max(1, cores ?? 2));
+}
+
 class StockfishEngineImpl implements StockfishEngine {
   private instance: StockfishInstance | null = null;
   private readyPromise: Promise<void> | null = null;
   private skillLevel = 5;
+  private threadCount = 1;
   private pendingSearch: {
     resolve: (move: EngineMove) => void;
     reject: (error: Error) => void;
@@ -111,7 +120,7 @@ class StockfishEngineImpl implements StockfishEngine {
 
     await this.sendAndWait("uci", (line) => line === "uciok");
     await this.sendAndWait("isready", (line) => line === "readyok");
-    this.applySkillLevel();
+    this.applyEngineOptions();
   }
 
   private handleMessage(line: string): void {
@@ -193,16 +202,23 @@ class StockfishEngineImpl implements StockfishEngine {
     });
   }
 
-  private applySkillLevel(): void {
+  private applyEngineOptions(): void {
     this.instance?.postMessage(`setoption name Skill Level value ${this.skillLevel}`);
-    this.instance?.postMessage("setoption name Threads value 1");
+    this.instance?.postMessage(`setoption name Threads value ${this.threadCount}`);
     this.instance?.postMessage("setoption name Hash value 128");
+  }
+
+  private setThreadCount(count: number): void {
+    this.threadCount = Math.max(1, count);
+    if (this.instance) {
+      this.instance.postMessage(`setoption name Threads value ${this.threadCount}`);
+    }
   }
 
   setSkillLevel(level: number): void {
     this.skillLevel = Math.max(0, Math.min(20, level));
     if (this.instance) {
-      this.applySkillLevel();
+      this.applyEngineOptions();
     }
   }
 
@@ -211,8 +227,7 @@ class StockfishEngineImpl implements StockfishEngine {
     moves: string[],
     options: SearchOptions = {},
   ): Promise<EngineMove> {
-    const result = await this.search(fen, moves, options);
-    return result;
+    return this.search(fen, moves, options);
   }
 
   async evaluate(
@@ -220,12 +235,7 @@ class StockfishEngineImpl implements StockfishEngine {
     moves: string[],
     options: SearchOptions = {},
   ): Promise<Evaluation> {
-    const depth = options.depth ?? 12;
-    const result = await this.search(fen, moves, {
-      ...options,
-      depth,
-      moveTime: options.moveTime ?? 2000,
-    });
+    const result = await this.search(fen, moves, options);
 
     return {
       cp: result.eval ?? 0,
@@ -256,7 +266,15 @@ class StockfishEngineImpl implements StockfishEngine {
     const depth =
       options.depth ??
       (typeof SharedArrayBuffer === "undefined" ? DEFAULT_DEPTH - 3 : DEFAULT_DEPTH);
-    const moveTime = options.moveTime ?? DEFAULT_MOVE_TIME;
+    const moveTime = options.moveTime;
+    const maxMoveTime = options.maxMoveTime;
+    const useDepthSearch = options.depth !== undefined && moveTime === undefined;
+
+    if (options.multiThread) {
+      this.setThreadCount(getAnalysisThreadCount());
+    } else {
+      this.setThreadCount(1);
+    }
 
     if (options.skillLevel !== undefined) {
       this.setSkillLevel(options.skillLevel);
@@ -269,11 +287,36 @@ class StockfishEngineImpl implements StockfishEngine {
 
     this.instance.postMessage(position);
 
+    const timeoutMs = moveTime
+      ? moveTime + 1000
+      : maxMoveTime
+        ? maxMoveTime + 500
+        : depth * 400 + 2000;
+
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        this.stop();
+        if (!this.pendingSearch) {
+          reject(new Error("Stockfish search timed out"));
+          return;
+        }
+
+        const { latestInfo } = this.pendingSearch;
+        clearTimeout(this.pendingSearch.timeoutId);
+        this.instance?.postMessage("stop");
+        this.pendingSearch = null;
+
+        if (latestInfo.eval !== undefined && latestInfo.pv?.[0]) {
+          resolve({
+            uci: latestInfo.pv[0],
+            eval: latestInfo.eval,
+            depth: latestInfo.depth ?? depth,
+            pv: latestInfo.pv,
+          });
+          return;
+        }
+
         reject(new Error("Stockfish search timed out"));
-      }, moveTime + 1000);
+      }, timeoutMs);
 
       this.pendingSearch = {
         resolve,
@@ -282,8 +325,10 @@ class StockfishEngineImpl implements StockfishEngine {
         timeoutId,
       };
 
-      if (options.moveTime) {
-        this.instance?.postMessage(`go movetime ${options.moveTime}`);
+      if (useDepthSearch) {
+        this.instance?.postMessage(`go depth ${depth}`);
+      } else if (moveTime) {
+        this.instance?.postMessage(`go movetime ${moveTime}`);
       } else {
         this.instance?.postMessage(`go depth ${depth}`);
       }
