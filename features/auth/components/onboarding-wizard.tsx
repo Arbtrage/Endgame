@@ -157,18 +157,17 @@ export function OnboardingWizard({
               <Button disabled={loading} onClick={completeFlow} className="flex-1">
                 {loading ? "Saving..." : "Go to dashboard"}
               </Button>
-              <Button variant="outline" disabled={loading} className="flex-1" asChild={false}>
-                <a
-                  href={recommendedHref}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    void completeFlow().then(() => {
-                      window.location.href = recommendedHref;
-                    });
-                  }}
-                >
-                  Start now
-                </a>
+              <Button
+                variant="outline"
+                disabled={loading}
+                className="flex-1"
+                onClick={() => {
+                  void completeFlow().then(() => {
+                    window.location.href = recommendedHref;
+                  });
+                }}
+              >
+                Start now
               </Button>
             </div>
           </div>
