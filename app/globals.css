@@ -37,14 +37,36 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Semantic chess tokens */
+  --eval-white-advantage: oklch(0.92 0 0);
+  --eval-black-advantage: oklch(0.22 0.01 260);
+  --eval-neutral: oklch(0.45 0.01 260);
+  --move-brilliant: oklch(0.62 0.14 300);
+  --move-great: oklch(0.58 0.12 145);
+  --move-good: oklch(0.55 0.08 145);
+  --move-inaccuracy: oklch(0.72 0.12 85);
+  --move-mistake: oklch(0.65 0.15 55);
+  --move-blunder: oklch(0.58 0.2 25);
+  --coach-accent: oklch(0.62 0.12 280);
+  --streak: oklch(0.68 0.14 55);
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Elevation */
+  --shadow-tint: oklch(0.12 0.02 260 / 35%);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -83,19 +105,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 .dark {
   --background: oklch(0.12 0.01 260);
   --foreground: oklch(0.95 0 0);
@@ -103,7 +112,7 @@ body {
   --card-foreground: oklch(0.95 0 0);
   --popover: oklch(0.18 0.01 260);
   --popover-foreground: oklch(0.95 0 0);
-  --primary: oklch(0.62 0.17 145);
+  --primary: oklch(0.62 0.14 145);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.22 0.01 260);
   --secondary-foreground: oklch(0.92 0 0);
@@ -114,30 +123,82 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.62 0.17 145);
+  --ring: oklch(0.62 0.14 145);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.14 0.01 260);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.62 0.14 145);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.22 0.01 260);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.62 0.14 145);
+  --shadow-tint: oklch(0.08 0.02 260 / 50%);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .shadow-elevated {
+    box-shadow:
+      0 1px 2px var(--shadow-tint),
+      0 4px 16px var(--shadow-tint);
+  }
+
+  .shadow-elevated-hover {
+    box-shadow:
+      0 2px 4px var(--shadow-tint),
+      0 8px 24px var(--shadow-tint);
+  }
+
+  .surface-grain {
+    position: relative;
+  }
+
+  .surface-grain::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px 128px;
+  }
+
+  .transition-default {
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-default);
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none;
   }
 }

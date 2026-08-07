@@ -11,9 +11,9 @@ import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 const STARTER_PROMPTS = [
-  "Explain the Italian Game",
-  "How do I punish early queen moves?",
-  "What should I do in this endgame?",
+  "Why did my last game swing after move 14?",
+  "Walk me through the Italian Game ideas",
+  "How should I punish early queen moves?",
 ];
 
 type CoachChatProps = {
@@ -100,25 +100,24 @@ export function CoachChat({ context, className }: CoachChatProps) {
             <ChatMessageSkeleton />
           ) : showEmptyState ? (
             <div className="mx-auto flex h-full min-h-48 max-w-3xl flex-col items-center justify-center px-4 py-10 text-center sm:px-6">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground">
                 <Sparkles className="size-4" />
               </div>
-              <p className="text-sm font-medium">Start a conversation</p>
+              <p className="text-sm font-semibold">Ask the coach anything</p>
               <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
-                Try a prompt below or ask anything about chess.
+                Openings, tactics, or a position from your last game.
               </p>
               <div className="mt-5 flex w-full max-w-md flex-col gap-2">
                 {STARTER_PROMPTS.map((prompt) => (
-                  <Button
+                  <button
                     key={prompt}
                     type="button"
-                    variant="outline"
-                    className="h-auto w-full justify-start whitespace-normal px-3 py-2.5 text-left text-xs leading-relaxed"
+                    className="rounded-lg border border-border/50 px-3 py-2.5 text-left text-xs leading-relaxed text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted/20 hover:text-foreground disabled:opacity-50"
                     disabled={chat.status !== "ready"}
                     onClick={() => void chat.send(prompt)}
                   >
                     {prompt}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>

@@ -26,7 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { EmptyState } from "@/shared/components/empty-state";
+import { GameRowSkeleton } from "@/shared/ui/skeleton";
 
 type GameSetupProps = {
   onSuccess?: (gameId: string) => void;
@@ -111,7 +112,7 @@ export function PlayModeHub({ mode, hint }: PlayModeHubProps) {
 
   return (
     <FeaturePage>
-      <FeatureHero icon={icon} title={title} description={description} hint={hint} />
+      <FeatureHero variant="split" icon={icon} title={title} description={description} hint={hint} />
 
       <FeaturePanel
         footer={
@@ -127,9 +128,9 @@ export function PlayModeHub({ mode, hint }: PlayModeHubProps) {
         }
       >
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
+          <div className="space-y-2">
+            <GameRowSkeleton />
+            <GameRowSkeleton />
           </div>
         ) : (
           <div className="space-y-8">
@@ -161,16 +162,16 @@ export function PlayModeHub({ mode, hint }: PlayModeHubProps) {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border border-dashed border-border/60 p-8 text-center">
-                  <p className="text-sm font-medium">No games yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Start your first match with the button below.
-                  </p>
-                  <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-                    <Plus className="mr-2 size-4" />
-                    {newGameLabel}
-                  </Button>
-                </div>
+                <EmptyState
+                  title="No games in this mode yet"
+                  description="Start your first match — settings are saved for next time."
+                  action={
+                    <Button onClick={() => setDialogOpen(true)}>
+                      <Plus className="mr-2 size-4" />
+                      {newGameLabel}
+                    </Button>
+                  }
+                />
               )}
             </FeatureSection>
           </div>

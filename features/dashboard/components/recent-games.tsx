@@ -5,7 +5,9 @@ import { listGames } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { EmptyState } from "@/shared/components/empty-state";
 import { GameCard } from "@/features/game/components/game-card";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { GameRowSkeleton } from "@/shared/ui/skeleton";
+import Link from "next/link";
+import { Button } from "@/shared/ui/button";
 
 export function RecentGames() {
   const { data, isLoading } = useQuery({
@@ -16,8 +18,8 @@ export function RecentGames() {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <Skeleton className="h-16 w-full rounded-xl" />
+        <GameRowSkeleton />
+        <GameRowSkeleton />
       </div>
     );
   }
@@ -25,8 +27,13 @@ export function RecentGames() {
   if (!data?.length) {
     return (
       <EmptyState
-        title="No games yet"
-        description="Start a match against a villain or hero — your history will show up here for replay."
+        title="No finished games yet"
+        description="Your completed games show up here for replay and analysis."
+        action={
+          <Button render={<Link href="/play/coach" />} nativeButton={false}>
+            Play your first game
+          </Button>
+        }
       />
     );
   }

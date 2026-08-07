@@ -15,8 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
+  title: {
+    default: APP_NAME,
+    template: `%s · ${APP_NAME}`,
+  },
   description: APP_DESCRIPTION,
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -17,6 +17,8 @@ import {
 } from "@/shared/api/fetcher";
 import type { PvpActiveGame, PvpInvite } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
+import { EmptyState } from "@/shared/components/empty-state";
+import { InlineEmpty } from "@/shared/components/inline-empty";
 import {
   FeatureHero,
   FeaturePage,
@@ -313,12 +315,11 @@ export function PvpHub() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border border-dashed border-border/60 px-4 py-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No {inviteTab === "incoming" ? "incoming" : "outgoing"}{" "}
-                    invites.
-                  </p>
-                </div>
+                <InlineEmpty
+                  title={`No ${inviteTab === "incoming" ? "incoming" : "outgoing"} invites`}
+                  description="Challenge a friend or wait for a response to an open invite."
+                  className="py-6"
+                />
               )}
             </FeatureSection>
 
@@ -333,16 +334,16 @@ export function PvpHub() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border border-dashed border-border/60 px-4 py-8 text-center">
-                  <p className="text-sm font-medium">No PvP games yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Challenge a friend to start your history.
-                  </p>
-                  <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-                    <Plus className="mr-2 size-4" />
-                    New challenge
-                  </Button>
-                </div>
+                <EmptyState
+                  title="No PvP games yet"
+                  description="Challenge a friend to start your head-to-head history."
+                  action={
+                    <Button onClick={() => setDialogOpen(true)}>
+                      <Plus className="mr-2 size-4" />
+                      New challenge
+                    </Button>
+                  }
+                />
               )}
             </FeatureSection>
           </div>

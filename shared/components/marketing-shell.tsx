@@ -54,9 +54,9 @@ export function MarketingShell({
             </Link>
             <Link
               href="/auth/sign-up"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98]"
             >
-              Get started
+              Start playing
             </Link>
           </div>
         </div>

@@ -3,12 +3,13 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 
-type MobileTab = "moves" | "chat" | "actions";
+type MobileTab = "moves" | "chat" | "coach" | "actions";
 
 type GamePlayMobileTabsProps = {
   movesSlot: ReactNode;
   actionsSlot: ReactNode;
   chatSlot?: ReactNode;
+  coachSlot?: ReactNode;
   focusActions?: boolean;
 };
 
@@ -16,6 +17,7 @@ export function GamePlayMobileTabs({
   movesSlot,
   actionsSlot,
   chatSlot,
+  coachSlot,
   focusActions = false,
 }: GamePlayMobileTabsProps) {
   const [activeTab, setActiveTab] = useState<MobileTab>("moves");
@@ -29,6 +31,7 @@ export function GamePlayMobileTabs({
   const tabs: { id: MobileTab; label: string }[] = [
     { id: "moves", label: "Moves" },
     ...(chatSlot ? [{ id: "chat" as const, label: "Chat" }] : []),
+    ...(coachSlot ? [{ id: "coach" as const, label: "Coach" }] : []),
     { id: "actions", label: "Actions" },
   ];
 
@@ -48,8 +51,8 @@ export function GamePlayMobileTabs({
             className={cn(
               "min-h-11 flex-1 rounded-md px-2 text-sm font-medium transition-colors",
               activeTab === tab.id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-background text-foreground shadow-sm ring-1 ring-primary/20"
+                : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
             )}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -66,11 +69,14 @@ export function GamePlayMobileTabs({
             ? "Moves"
             : activeTab === "chat"
               ? "Chat"
-              : "Actions"
+              : activeTab === "coach"
+                ? "Coach"
+                : "Actions"
         }
       >
         {activeTab === "moves" ? movesSlot : null}
         {activeTab === "chat" && chatSlot ? chatSlot : null}
+        {activeTab === "coach" && coachSlot ? coachSlot : null}
         {activeTab === "actions" ? actionsSlot : null}
       </div>
     </div>

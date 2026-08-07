@@ -69,6 +69,11 @@ export function GamePlayLayout({
                     <div className="p-3 sm:p-4">{panel.bottomSlot}</div>
                   ) : undefined
                 }
+                coachSlot={
+                  variant === "coach" && extraColumn ? (
+                    <div className="h-full min-h-0 p-3 sm:p-4">{extraColumn}</div>
+                  ) : undefined
+                }
                 actionsSlot={
                   <GameSidebarActionsSection
                     onResign={panel.onResign}
@@ -93,12 +98,7 @@ export function GamePlayLayout({
         ) : null}
 
         {extraColumn ? (
-          <div
-            className={cn(
-              "hidden min-h-0 min-w-0 flex-col xl:flex",
-              variant === "coach" && "col-span-2 xl:col-span-1",
-            )}
-          >
+          <div className="hidden min-h-0 min-w-0 flex-col xl:flex xl:h-full">
             {extraColumn}
           </div>
         ) : null}

@@ -12,6 +12,7 @@ import {
   getTrainingRecommendations,
 } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
+import { EmptyState } from "@/shared/components/empty-state";
 import {
   FeatureHero,
   FeaturePage,
@@ -19,7 +20,7 @@ import {
   FeatureSection,
 } from "@/shared/components/feature-page";
 import { Button } from "@/shared/ui/button";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { LessonCardSkeleton, Skeleton } from "@/shared/ui/skeleton";
 import { toast } from "sonner";
 import type { LessonDetail } from "@/shared/api/fetcher";
 
@@ -54,18 +55,19 @@ export function TrainingHub() {
   return (
     <FeaturePage>
       <FeatureHero
+        variant="compact"
         icon={GraduationCap}
         title="Train"
-        description="Personalized lessons built from your weaknesses, with interactive puzzles and progressive hints."
+        description="Lessons built from your weaknesses — puzzles with hints, not generic drills."
       />
 
       <FeaturePanel>
         <div className="space-y-6">
           <FeatureSection title="Recommendations">
             {recLoading ? (
-              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-24 w-full rounded-xl" />
             ) : (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+              <div className="rounded-xl border border-border/50 bg-muted/10 p-4">
                 {recommendations?.hasEnoughData ? (
                   <p className="text-sm text-muted-foreground">
                     Focus areas:{" "}
@@ -88,7 +90,7 @@ export function TrainingHub() {
                   {generateMutation.isPending ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      Generating…
+                      Generating lesson…
                     </>
                   ) : (
                     "Generate lesson"
@@ -103,8 +105,11 @@ export function TrainingHub() {
           </FeatureSection>
 
           <FeatureSection title="Your lessons">
-            {lessonsLoading ? (
-              <Skeleton className="h-24 w-full" />
+            {lessonsLoading || generateMutation.isPending ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <LessonCardSkeleton />
+                <LessonCardSkeleton />
+              </div>
             ) : lessons && lessons.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {(lessons as LessonDetail[]).map((lesson) => (
@@ -112,9 +117,19 @@ export function TrainingHub() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                No lessons yet. Generate your first lesson above.
-              </p>
+              <EmptyState
+                title="No lessons yet"
+                description="Generate your first lesson from recent mistakes, or play a few more games for better recommendations."
+                action={
+                  <Button
+                    type="button"
+                    disabled={generateMutation.isPending}
+                    onClick={() => generateMutation.mutate()}
+                  >
+                    Generate your first lesson
+                  </Button>
+                }
+              />
             )}
           </FeatureSection>
         </div>

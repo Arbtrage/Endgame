@@ -9,7 +9,7 @@ export default function CoachChatPage() {
     <ViewportPage className="max-w-6xl">
       <ViewportPageSection
         fill
-        className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/60 bg-card/40"
+        className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/50 bg-card/40 shadow-elevated"
       >
         <CoachChat className="h-full min-h-0" />
       </ViewportPageSection>

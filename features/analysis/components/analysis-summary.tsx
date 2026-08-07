@@ -1,6 +1,7 @@
 "use client";
 
 import type { AnalysisMode } from "@/features/analysis/engine/analysis-engine";
+import { StatGrid, StatTile } from "@/shared/components/stat-tile";
 
 type AnalysisSummaryProps = {
   analysis: {
@@ -27,21 +28,15 @@ export function AnalysisSummary({ analysis, analysisMode }: AnalysisSummaryProps
   return (
     <div className="space-y-3">
       {analysisMode ? (
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           {analysisMode === "fast" ? "Fast analysis" : "Standard analysis"}
         </p>
       ) : null}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <StatGrid columns={3}>
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5"
-          >
-            <p className="text-xs text-muted-foreground">{stat.label}</p>
-            <p className="text-lg font-semibold tabular-nums">{stat.value}</p>
-          </div>
+          <StatTile key={stat.label} label={stat.label} value={stat.value} />
         ))}
-      </div>
+      </StatGrid>
     </div>
   );
 }

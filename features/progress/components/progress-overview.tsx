@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProgressOverview } from "@/shared/api/fetcher";
+import { StatGrid, StatTile } from "@/shared/components/stat-tile";
 
 type ProgressOverviewCardsProps = {
   data: ProgressOverview;
@@ -18,16 +19,10 @@ export function ProgressOverviewCards({ data }: ProgressOverviewCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <StatGrid columns={4}>
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5"
-        >
-          <p className="text-xs text-muted-foreground">{stat.label}</p>
-          <p className="text-lg font-semibold tabular-nums">{stat.value}</p>
-        </div>
+        <StatTile key={stat.label} label={stat.label} value={stat.value} />
       ))}
-    </div>
+    </StatGrid>
   );
 }

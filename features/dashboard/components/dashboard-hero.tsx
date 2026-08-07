@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { useSession } from "@/shared/auth/auth-client";
-import { Skeleton } from "@/shared/ui/skeleton";
 import { StreakBadge } from "@/features/dashboard/components/streak-badge";
+import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 export function DashboardHero() {
   const { data: session } = useSession();
@@ -27,18 +29,22 @@ export function DashboardHero() {
   const name = profile?.name ?? session?.user.name ?? "Player";
 
   return (
-    <div className="rounded-xl border border-border/60 bg-gradient-to-br from-muted/40 via-background to-background px-4 py-3 sm:px-5 sm:py-4">
-      <div className="space-y-1.5">
+    <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-border/50 bg-card/40 px-4 py-4 sm:px-5">
+      <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
-            Welcome back, {name}
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            Hi, {name}
           </h1>
           <StreakBadge />
         </div>
         <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Pick a mode below or replay a finished game to study your moves.
+          Continue with coach mode or review your last game while it&apos;s still
+          fresh.
         </p>
       </div>
+      <Button render={<Link href="/play/coach" />} nativeButton={false}>
+        Start coach game
+      </Button>
     </div>
   );
 }

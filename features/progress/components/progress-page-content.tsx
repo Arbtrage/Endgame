@@ -31,9 +31,10 @@ export function ProgressPageContent() {
   return (
     <FeaturePage>
       <FeatureHero
+        variant="inline"
         icon={TrendingUp}
         title="Progress"
-        description="Track accuracy trends, weakness patterns, and weekly coaching reports."
+        description="Accuracy trends, weakness patterns, and weekly coaching reports."
       />
 
       <FeaturePanel>

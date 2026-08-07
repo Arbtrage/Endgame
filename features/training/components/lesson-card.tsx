@@ -16,25 +16,25 @@ export function LessonCard({ lesson }: LessonCardProps) {
     <Link
       href={`/train/${lesson.id}`}
       className={cn(
-        "group flex flex-col gap-2 rounded-xl border border-border/60 bg-card p-4 transition-all",
-        "hover:border-primary/40 hover:bg-muted/20",
+        "group flex h-full flex-col rounded-xl border border-border/50 bg-card/60 p-4 shadow-elevated transition-[box-shadow,border-color] duration-200",
+        "hover:border-primary/30 hover:shadow-elevated-hover",
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-medium leading-snug">{lesson.title}</h3>
+        <h3 className="font-semibold leading-snug">{lesson.title}</h3>
         <Badge variant="outline">{lesson.topic}</Badge>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">
         {lesson.description}
       </p>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-3 text-xs text-muted-foreground">
         <span>
           {lesson.exercises.length} exercises · Level {lesson.difficulty}
         </span>
-        {progress ? (
-          <span>{completed ? "Completed" : `Exercise ${progress.currentExercise + 1}`}</span>
-        ) : null}
-        <ChevronRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        <span className="inline-flex items-center gap-1 font-medium text-primary">
+          {progress ? (completed ? "Review" : "Continue") : "Start"}
+          <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );
