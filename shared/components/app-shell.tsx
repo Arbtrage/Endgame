@@ -14,7 +14,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isActiveGame = /^\/play\/[^/]+$/.test(pathname ?? "");
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-background">
+    <div
+      className={cn(
+        "relative flex flex-col bg-background",
+        isActiveGame ? "h-dvh overflow-hidden" : "min-h-dvh",
+      )}
+    >
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>

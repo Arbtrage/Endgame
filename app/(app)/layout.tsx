@@ -14,7 +14,7 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="h-dvh overflow-hidden">
+    <div className="min-h-dvh">
       <AppShell>{children}</AppShell>
     </div>
   );

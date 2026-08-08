@@ -4,7 +4,7 @@ export default function ActiveGameLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
       {children}
     </div>
   );

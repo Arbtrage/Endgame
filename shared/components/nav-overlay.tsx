@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import type { NavGroup, NavLink } from "@/shared/lib/nav-config";
@@ -43,10 +44,33 @@ export function NavOverlay({
   const flatLinks = withStaggerDelays(links ?? []);
   const groupedLinks = groups ? flattenGroupsWithDelays(groups) : null;
 
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open ? (
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
           className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-3xl"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
