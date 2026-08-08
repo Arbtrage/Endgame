@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Upload } from "lucide-react";
+import { ChartBar, UploadSimple } from "@phosphor-icons/react";
 import { PGNImportDialog } from "@/features/analysis/components/pgn-import-dialog";
 import { GameCard } from "@/features/game/components/game-card";
 import { listGames } from "@/shared/api/fetcher";
@@ -28,8 +28,7 @@ export function AnalyzeHub() {
   return (
     <FeaturePage>
       <FeatureHero
-        variant="inline"
-        icon={BarChart3}
+        icon={ChartBar}
         title="Analyze"
         description="Review completed games with engine-backed classifications, accuracy scores, and AI summaries."
         action={
@@ -79,7 +78,7 @@ export function AnalyzeHub() {
             </div>
           ) : (
             <EmptyState
-              icon={<Upload className="size-5" />}
+              icon={<UploadSimple className="size-5" weight="light" />}
               title="Nothing to analyze yet"
               description="Finish a game or import a PGN to get accuracy scores and move feedback."
               action={

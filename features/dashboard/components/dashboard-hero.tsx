@@ -6,7 +6,9 @@ import { getProfile } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
 import { useSession } from "@/shared/auth/auth-client";
 import { StreakBadge } from "@/features/dashboard/components/streak-badge";
-import { Button } from "@/shared/ui/button";
+import { PillCta } from "@/shared/components/pill-cta";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { Eyebrow } from "@/shared/components/eyebrow";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export function DashboardHero() {
@@ -18,33 +20,29 @@ export function DashboardHero() {
   });
 
   if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-7 w-64" />
-        <Skeleton className="h-4 w-96 max-w-full" />
-      </div>
-    );
+    return <Skeleton className="h-32 w-full rounded-[2rem]" />;
   }
 
   const name = profile?.name ?? session?.user.name ?? "Player";
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-border/50 bg-card/40 px-4 py-4 sm:px-5">
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+    <BezelCard padding="lg" className="h-full">
+      <Eyebrow className="mb-4">Today</Eyebrow>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
             Hi, {name}
           </h1>
-          <StreakBadge />
+          <p className="mt-3 max-w-lg text-pretty text-muted-foreground">
+            Continue with coach mode or review your last game while it&apos;s
+            still fresh.
+          </p>
+          <div className="mt-4">
+            <StreakBadge />
+          </div>
         </div>
-        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Continue with coach mode or review your last game while it&apos;s still
-          fresh.
-        </p>
+        <PillCta href="/play/coach">Start coach game</PillCta>
       </div>
-      <Button render={<Link href="/play/coach" />} nativeButton={false}>
-        Start coach game
-      </Button>
-    </div>
+    </BezelCard>
   );
 }

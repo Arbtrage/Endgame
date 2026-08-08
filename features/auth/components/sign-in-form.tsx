@@ -5,14 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { signIn } from "@/shared/auth/auth-client";
-import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
@@ -34,9 +28,7 @@ export function SignInForm() {
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {},
-  );
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -49,13 +41,7 @@ export function SignInForm() {
     if (nextErrors.email || nextErrors.password) return;
 
     setLoading(true);
-
-    const result = await signIn.email({
-      email,
-      password,
-      callbackURL: callbackUrl,
-    });
-
+    const result = await signIn.email({ email, password, callbackURL: callbackUrl });
     setLoading(false);
 
     if (result.error) {
@@ -68,50 +54,32 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="border-border/50 shadow-elevated">
-      <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>
-          Pick up where you left off — your games and analysis are saved.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={Boolean(errors.email)}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            <FieldError>{errors.email}</FieldError>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={Boolean(errors.password)}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-            <FieldError>{errors.password}</FieldError>
-          </Field>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
-        <p className="text-center text-sm text-muted-foreground">
-          New here?{" "}
-          <Link href="/auth/sign-up" className="text-primary hover:underline">
-            Create an account
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+    <BezelCard padding="lg">
+      <h2 className="font-display text-2xl font-bold">Sign in</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Pick up where you left off — games and analysis saved.
+      </p>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+        <Field>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input id="email" type="email" autoComplete="email" aria-invalid={Boolean(errors.email)} value={email} onChange={(e) => setEmail(e.target.value)} />
+          <FieldError>{errors.email}</FieldError>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input id="password" type="password" autoComplete="current-password" aria-invalid={Boolean(errors.password)} value={password} onChange={(e) => setPassword(e.target.value)} />
+          <FieldError>{errors.password}</FieldError>
+        </Field>
+        <PillButton type="submit" disabled={loading} className="w-full justify-center">
+          {loading ? "Signing in..." : "Sign in"}
+        </PillButton>
+      </form>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        New here?{" "}
+        <Link href="/auth/sign-up" className="text-primary hover:underline">
+          Create an account
+        </Link>
+      </p>
+    </BezelCard>
   );
 }

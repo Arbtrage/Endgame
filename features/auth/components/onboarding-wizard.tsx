@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { completeOnboarding } from "@/shared/api/fetcher";
-import { Button } from "@/shared/ui/button";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { Eyebrow } from "@/shared/components/eyebrow";
+import { PillButton } from "@/shared/components/pill-cta";
 import {
   Dialog,
   DialogContent,
@@ -62,116 +65,128 @@ export function OnboardingWizard({
 
   return (
     <Dialog open={open}>
-      <DialogContent showCloseButton={false} className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {step === 0
-              ? "What's your rating range?"
-              : step === 1
-                ? "What do you want to work on?"
-                : "You're set"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 0
-              ? "The coach adjusts explanation depth based on your level."
-              : step === 1
-                ? "We'll suggest a starting point — you can change it anytime."
-                : "Your preferences are saved. Start with the mode that fits your goal."}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-xl border-0 bg-transparent p-0 shadow-none"
+      >
+        <BezelCard padding="lg" className="glass-surface">
+          <DialogHeader className="text-left">
+            <Eyebrow className="mb-3">Welcome</Eyebrow>
+            <DialogTitle className="font-display text-2xl tracking-tight">
+              {step === 0
+                ? "What's your rating range?"
+                : step === 1
+                  ? "What do you want to work on?"
+                  : "You're set"}
+            </DialogTitle>
+            <DialogDescription className="text-pretty">
+              {step === 0
+                ? "The coach adjusts explanation depth based on your level."
+                : step === 1
+                  ? "We'll suggest a starting point — you can change it anytime."
+                  : "Your preferences are saved. Start with the mode that fits your goal."}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="flex gap-2">
-          {[0, 1, 2].map((index) => (
-            <div
-              key={index}
-              className={cn(
-                "h-1 flex-1 rounded-full transition-colors",
-                index <= step ? "bg-primary" : "bg-muted",
-              )}
-            />
-          ))}
-        </div>
-
-        {step === 0 ? (
-          <div className="grid gap-2">
-            {skillLevels.map((level) => (
-              <button
-                key={level.value}
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setSkillEstimate(level.value);
-                  setStep(1);
-                }}
+          <div className="mt-6 flex gap-2">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
                 className={cn(
-                  "rounded-xl border border-border/50 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/20",
-                  skillEstimate === level.value && "border-primary/40 bg-primary/5",
+                  "h-1 flex-1 rounded-full transition-spring",
+                  index <= step ? "bg-primary" : "bg-white/10",
                 )}
-              >
-                <p className="text-sm font-semibold">{level.label}</p>
-                <p className="text-xs text-muted-foreground">{level.hint}</p>
-              </button>
+              />
             ))}
-            <Button
-              variant="ghost"
-              disabled={loading}
-              onClick={() => setStep(1)}
-            >
-              Skip for now
-            </Button>
           </div>
-        ) : null}
 
-        {step === 1 ? (
-          <div className="grid gap-2">
-            {goals.map((goal) => (
+          {step === 0 ? (
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              {skillLevels.map((level) => (
+                <button
+                  key={level.value}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setSkillEstimate(level.value);
+                    setStep(1);
+                  }}
+                  className={cn(
+                    "rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left transition-spring hover:border-primary/30 hover:bg-white/[0.06]",
+                    skillEstimate === level.value &&
+                      "border-primary/40 bg-primary/10",
+                  )}
+                >
+                  <p className="text-sm font-semibold">{level.label}</p>
+                  <p className="text-xs text-muted-foreground">{level.hint}</p>
+                </button>
+              ))}
               <button
-                key={goal.id}
                 type="button"
                 disabled={loading}
-                onClick={() => {
-                  setRecommendedHref(goal.href);
-                  setStep(2);
-                }}
-                className="rounded-xl border border-border/50 px-4 py-3 text-left text-sm font-medium transition-colors hover:border-primary/30 hover:bg-muted/20"
+                onClick={() => setStep(1)}
+                className="col-span-full text-sm text-muted-foreground hover:text-foreground"
               >
-                {goal.label}
+                Skip for now
               </button>
-            ))}
-          </div>
-        ) : null}
+            </div>
+          ) : null}
 
-        {step === 2 ? (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-border/50 bg-muted/10 p-4">
-              <p className="text-sm font-medium">Recommended starting point</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {recommendedHref === "/play/coach"
-                  ? "Coach mode — explanations while you play"
-                  : recommendedHref === "/analyze"
-                    ? "Analysis hub — review finished games"
-                    : "Training — puzzles from your weaknesses"}
-              </p>
+          {step === 1 ? (
+            <div className="mt-6 grid gap-2">
+              {goals.map((goal) => (
+                <button
+                  key={goal.id}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setRecommendedHref(goal.href);
+                    setStep(2);
+                  }}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-left text-sm font-medium transition-spring hover:border-primary/30 hover:bg-white/[0.06]"
+                >
+                  {goal.label}
+                </button>
+              ))}
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button disabled={loading} onClick={completeFlow} className="flex-1">
-                {loading ? "Saving..." : "Go to dashboard"}
-              </Button>
-              <Button
-                variant="outline"
-                disabled={loading}
-                className="flex-1"
-                onClick={() => {
-                  void completeFlow().then(() => {
-                    window.location.href = recommendedHref;
-                  });
-                }}
-              >
-                Start now
-              </Button>
+          ) : null}
+
+          {step === 2 ? (
+            <div className="mt-6 space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-sm font-medium">Recommended starting point</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {recommendedHref === "/play/coach"
+                    ? "Coach mode — explanations while you play"
+                    : recommendedHref === "/analyze"
+                      ? "Analysis hub — review finished games"
+                      : "Training — puzzles from your weaknesses"}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <PillButton
+                  disabled={loading}
+                  onClick={completeFlow}
+                  className="flex-1 justify-center"
+                >
+                  {loading ? "Saving..." : "Go to dashboard"}
+                </PillButton>
+                <Link
+                  href={recommendedHref}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void completeFlow().then(() => {
+                      window.location.href = recommendedHref;
+                    });
+                  }}
+                  className="flex flex-1 items-center justify-center rounded-full border border-white/10 px-6 py-3 text-sm font-medium transition-spring hover:bg-white/[0.06]"
+                >
+                  Start now
+                </Link>
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </BezelCard>
       </DialogContent>
     </Dialog>
   );

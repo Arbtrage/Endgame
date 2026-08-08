@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp } from "lucide-react";
+import { TrendUp } from "@phosphor-icons/react";
 import { AccuracyChart } from "@/features/progress/components/accuracy-chart";
 import { GameHistoryTable } from "@/features/progress/components/game-history-table";
 import { ProgressOverviewCards } from "@/features/progress/components/progress-overview";
@@ -31,8 +31,7 @@ export function ProgressPageContent() {
   return (
     <FeaturePage>
       <FeatureHero
-        variant="inline"
-        icon={TrendingUp}
+        icon={TrendUp}
         title="Progress"
         description="Accuracy trends, weakness patterns, and weekly coaching reports."
       />

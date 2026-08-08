@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Users } from "lucide-react";
+import { Plus, UsersThree } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { GameCard } from "@/features/game/components/game-card";
 import { PvpChallengeForm } from "@/features/pvp/components/pvp-challenge-form";
@@ -218,7 +218,7 @@ export function PvpHub() {
   return (
     <FeaturePage>
       <FeatureHero
-        icon={Users}
+        icon={UsersThree}
         title="vs Friend"
         description="Challenge registered players, manage invites, and replay past human games — all in one place."
         hint="Live moves sync over WebSocket. Email invites work when Resend is configured."

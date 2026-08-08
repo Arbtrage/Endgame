@@ -1,4 +1,9 @@
-import { BarChart3, GraduationCap, Shield, Skull } from "lucide-react";
+import {
+  ChartLineUp,
+  GraduationCap,
+  Shield,
+  Skull,
+} from "@phosphor-icons/react";
 import {
   ActionCard,
   ActionCardGrid,
@@ -8,7 +13,7 @@ const actions = [
   {
     href: "/play/computer",
     title: "Vs villain",
-    description: "Engine-backed Marvel foes with adjustable strength",
+    description: "Engine-backed foes with adjustable strength",
     icon: Skull,
   },
   {
@@ -27,7 +32,7 @@ const actions = [
     href: "/analyze",
     title: "Analyze",
     description: "Review games with engine insights",
-    icon: BarChart3,
+    icon: ChartLineUp,
   },
 ];
 

@@ -4,14 +4,6 @@ import type { ReactNode } from "react";
 import { GameControls } from "@/features/game/components/game-controls";
 import { GameReplayControls } from "@/features/game/components/game-replay-controls";
 import { MoveList } from "@/features/game/components/move-list";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import type { GameMove } from "@/features/game/types";
 
 export type GameSidebarPanelProps = {
@@ -155,13 +147,13 @@ export function GameSidebarPanel({
   bottomSlot,
 }: GameSidebarPanelProps) {
   return (
-    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
-      <CardHeader className="shrink-0 border-b py-3">
-        <CardTitle className="text-base">Moves</CardTitle>
-        <CardDescription>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+      <div className="shrink-0 border-b border-white/10 px-4 py-3">
+        <p className="text-base font-semibold">Moves</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           {getMovesDescription(moves, activeIndex, isFinished)}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
       {moves.length > 0 ? (
         <GameReplayControls
@@ -173,26 +165,26 @@ export function GameSidebarPanel({
       ) : null}
 
       {topSlot ? (
-        <div className="shrink-0 border-b px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="shrink-0 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
           {topSlot}
         </div>
       ) : null}
 
-      <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
+      <div className="min-h-0 flex-1 overflow-hidden p-0">
         <MoveList
           moves={moves}
           activeIndex={activeIndex}
           onSelectMove={onSelectMove}
         />
-      </CardContent>
+      </div>
 
       {bottomSlot ? (
-        <div className="shrink-0 border-t px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="shrink-0 border-t border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
           {bottomSlot}
         </div>
       ) : null}
 
-      <CardFooter className="shrink-0 flex-col gap-2 border-t pt-3">
+      <div className="shrink-0 flex-col gap-2 border-t border-white/10 p-4">
         <GameControls
           onResign={onResign}
           onFlipBoard={onFlipBoard}
@@ -202,7 +194,7 @@ export function GameSidebarPanel({
           hideDrawOffer={isFinished}
           drawOfferPending={drawOfferPending}
         />
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

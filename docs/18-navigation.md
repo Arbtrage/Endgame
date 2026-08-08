@@ -46,56 +46,21 @@ See [09-api-design.md](./09-api-design.md).
 
 ## Navigation Structure
 
-### Sidebar (Desktop ≥1024px)
+### Floating Island Nav (all shells)
 
-```
-┌─────────────────────────┐
-│  ♟ Logo                  │
-│                          │
-│  ▶ Play               ▾  │  ← Expandable
-│    ├ vs Computer         │
-│    ├ vs AI Coach         │
-│    └ Coach Mode          │
-│                          │
-│  📊 Analyze              │
-│  🎓 Train                │
-│  📈 Progress             │
-│                          │
-│  ─────────────────────── │
-│                          │
-│  💬 Coach Chat           │
-│  ⚙ Settings              │
-│                          │
-│  ─────────────────────── │
-│  👤 User Name            │
-│     Sign Out             │
-└─────────────────────────┘
-```
+A centered glass pill (`IslandNav`) sits below the top safe area on marketing and authenticated pages. The hamburger morphs to an X and opens `NavOverlay` — full-screen blur with staggered link reveals. Nav groups: **Play**, **Learn**, **Account** (app) or marketing links (public).
 
-Sidebar width: 240px collapsed to 64px (icons only).
-
-### Mobile Bottom Nav (<768px)
-
-```
-┌──────┬──────┬──────┬──────┬──────┐
-│ Home │ Play │Analyze│Train │ More │
-└──────┴──────┴──────┴──────┴──────┘
-```
-
-"More" opens sheet with: Progress, Coach Chat, Settings, Sign Out.
+On active game routes (`/play/[gameId]`), the island hides; a compact exit pill returns to dashboard.
 
 ### Game Page Nav (Minimal)
 
-During active gameplay, sidebar collapses to icons. Top bar shows:
-- Back arrow → Dashboard (with confirmation if game in progress)
-- Mode badge (e.g., "Coach Mode")
-- Game controls (resign, settings)
+During active gameplay, chrome is minimal. Top bar shows back/exit, mode badge, and game controls. Side panels use light glass bezels only.
 
 ---
 
 ## Navigation Items
 
-| Label | Icon (Lucide) | Route | Badge |
+| Label | Icon (Phosphor) | Route | Badge |
 |-------|---------------|-------|-------|
 | Dashboard | `LayoutDashboard` | `/dashboard` | — |
 | vs Computer | `Monitor` | `/play/computer` | — |

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { CaretRight } from "@phosphor-icons/react";
 import { Badge } from "@/shared/ui/badge";
 import { getMarvelSuperheroForGame } from "@/features/game/constants/marvel-superheroes";
 import { getMarvelVillainForGame } from "@/features/game/constants/marvel-villains";
@@ -11,6 +11,7 @@ import {
 } from "@/features/game/engine/game-lifecycle";
 import type { GameSummary } from "@/shared/api/fetcher";
 import type { PlayerColor } from "@/features/game/types";
+import { iconClass } from "@/shared/components/icon";
 import { cn } from "@/shared/lib/utils";
 
 type GameCardProps = {
@@ -38,6 +39,18 @@ function modeLabel(mode: GameSummary["mode"]): string {
   }
 }
 
+function resultChipClass(
+  inProgress: boolean,
+  result: GameSummary["result"],
+): string {
+  if (inProgress) return "bg-primary/15 text-primary";
+  if (result === "WHITE_WIN" || result === "BLACK_WIN") {
+    return "bg-[color-mix(in_oklch,var(--move-good)_15%,transparent)] text-[var(--move-good)]";
+  }
+  if (result === "DRAW") return "bg-white/10 text-muted-foreground";
+  return "bg-[color-mix(in_oklch,var(--move-mistake)_15%,transparent)] text-[var(--move-mistake)]";
+}
+
 export function GameCard({ game }: GameCardProps) {
   const inProgress = game.status === "IN_PROGRESS";
   const resultLabel = inProgress
@@ -51,8 +64,8 @@ export function GameCard({ game }: GameCardProps) {
     <Link
       href={`/play/${game.id}`}
       className={cn(
-        "group flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-card px-4 py-3 transition-all",
-        "hover:border-primary/40 hover:bg-muted/20 hover:shadow-sm",
+        "group flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition-spring",
+        "hover:border-white/20 hover:bg-white/[0.06]",
       )}
     >
       <div className="min-w-0 space-y-2.5">
@@ -60,15 +73,17 @@ export function GameCard({ game }: GameCardProps) {
           <span className="truncate font-medium leading-snug">
             vs {opponentLabel(game)}
           </span>
-          <Badge variant="outline" className="shrink-0">
+          <Badge variant="outline" className="shrink-0 border-white/10">
             {modeLabel(game.mode)}
           </Badge>
-          <Badge
-            variant={inProgress ? "default" : "secondary"}
-            className="shrink-0"
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium",
+              resultChipClass(inProgress, game.result),
+            )}
           >
             {resultLabel}
-          </Badge>
+          </span>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground">
           {game.moveCount} moves · {new Date(game.createdAt).toLocaleDateString()}
@@ -79,7 +94,7 @@ export function GameCard({ game }: GameCardProps) {
       </div>
       <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
         {inProgress ? "Continue" : "Replay"}
-        <ChevronRight className="size-4" />
+        <CaretRight className={iconClass("sm")} weight="light" />
       </span>
     </Link>
   );

@@ -12,9 +12,20 @@
 
 ## Design Philosophy
 
-The visual language draws from Linear, Cursor, and Vercel — dark-first, minimal, precise. Every pixel serves a purpose. Animations are subtle but present. The chess board is the hero element; everything else recedes.
+The visual language is **Ethereal Glass** — OLED-dark (`#050505`), emerald mesh gradients, vantablack glass surfaces, and hairline `white/10` rings. Marketing and hubs use double-bezel cards, bento grids, and display typography; game surfaces stay content-forward with restrained chrome.
 
-**Keywords:** Dark, minimal, premium, precise, calm, intelligent.
+**Keywords:** Dark, glass, premium, precise, calm, intelligent.
+
+### Surface primitives
+
+| Primitive | Usage |
+|-----------|--------|
+| `BezelCard` / `BezelPanel` | Double-bezel shell with inset highlight |
+| `IslandNav` + `NavOverlay` | Floating pill nav + full-screen menu |
+| `BentoGrid` | Asymmetrical dashboard/hub layouts |
+| `Reveal` | Section entry motion (`whileInView`, respects reduced motion) |
+| `PillCta` / `PillButton` | Primary pill CTAs |
+| `Eyebrow` | Micro label above headings |
 
 ---
 
@@ -24,7 +35,7 @@ The visual language draws from Linear, Cursor, and Vercel — dark-first, minima
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--background` | `hsl(240 6% 6%)` | Page background |
+| `--background` | `#050505` (OLED) | Page background with mesh overlay |
 | `--foreground` | `hsl(0 0% 95%)` | Primary text |
 | `--card` | `hsl(240 5% 10%)` | Card surfaces |
 | `--card-foreground` | `hsl(0 0% 95%)` | Card text |
@@ -69,9 +80,9 @@ Light mode supported but dark is default. Light tokens invert background/foregro
 
 | Role | Font | Source |
 |------|------|--------|
-| Sans (UI) | Geist Sans | next/font (already configured) |
-| Mono (moves, eval) | Geist Mono | next/font (already configured) |
-| Display (landing) | Geist Sans | Bold weights |
+| Sans (UI) | Geist Sans | next/font |
+| Mono (moves, eval) | Geist Mono | next/font |
+| Display (marketing, hubs) | Plus Jakarta Sans | next/font (`--font-display`) |
 
 ### Scale
 
@@ -164,9 +175,9 @@ Then override CSS variables in `globals.css` with the palette defined above.
 
 ## Iconography
 
-- **Library:** Lucide React (shadcn default)
-- **Size:** 16px (inline), 20px (buttons), 24px (navigation)
-- **Stroke:** 1.5px default
+- **Product surfaces:** Phosphor React (`weight="light"`) via `shared/components/icon.tsx`
+- **shadcn internals:** Lucide (dialog close, dropdown chevrons)
+- **Size:** 16px (`sm`), 20px (`md`), 24px (`lg`)
 
 ### Key Icons
 
@@ -192,7 +203,7 @@ Then override CSS variables in `globals.css` with the palette defined above.
 | `--duration-slow` | 400ms | Page transitions |
 | `--duration-celebration` | 800ms | Streak, game win |
 | `--ease-default` | `[0.25, 0.1, 0.25, 1]` | Standard easing |
-| `--ease-spring` | `[0.34, 1.56, 0.64, 1]` | Bouncy (celebrations) |
+| `--ease-spring` | `cubic-bezier(0.32, 0.72, 0, 1)` | Island menu, section reveals |
 
 ---
 

@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { GraduationCap, Plus, Shield, Skull } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { GraduationCap, Plus, Shield, Skull } from "@phosphor-icons/react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { AiGameSetup } from "@/features/coaching/components/ai-game-setup";
@@ -36,7 +36,7 @@ type GameSetupProps = {
 type PlayMode = "COMPUTER" | "AI_OPPONENT" | "COACH";
 
 type PlayModeConfig = {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   title: string;
   description: string;
   newGameLabel: string;
@@ -112,7 +112,7 @@ export function PlayModeHub({ mode, hint }: PlayModeHubProps) {
 
   return (
     <FeaturePage>
-      <FeatureHero variant="split" icon={icon} title={title} description={description} hint={hint} />
+      <FeatureHero icon={icon} title={title} description={description} hint={hint} />
 
       <FeaturePanel
         footer={

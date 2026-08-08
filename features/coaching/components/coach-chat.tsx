@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Clock, Loader2, MessageSquarePlus, Sparkles } from "lucide-react";
+import { Clock, CircleNotch, ChatCircleDots, Sparkle } from "@phosphor-icons/react";
+import { iconClass } from "@/shared/components/icon";
 import { CoachChatInput } from "@/features/coaching/components/coach-chat-input";
 import { CoachChatMessage } from "@/features/coaching/components/coach-chat-message";
 import { CoachHistoryDialog } from "@/features/coaching/components/coach-history-dialog";
@@ -63,7 +64,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col overflow-hidden", className)}>
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5 sm:px-5">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-2.5 sm:px-5">
         <div className="min-w-0">
           <h1 className="text-sm font-semibold leading-snug sm:text-base">
             Coach Chat
@@ -80,7 +81,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
             aria-label="Chat history"
             onClick={handleHistoryOpen}
           >
-            <Clock className="size-4" />
+            <Clock className={iconClass("sm")} weight="light" />
           </Button>
           <Button
             type="button"
@@ -89,7 +90,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
             aria-label="New chat"
             onClick={() => chat.startNewChat()}
           >
-            <MessageSquarePlus className="size-4" />
+            <ChatCircleDots className={iconClass("sm")} weight="light" />
           </Button>
         </div>
       </header>
@@ -101,7 +102,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
           ) : showEmptyState ? (
             <div className="mx-auto flex h-full min-h-48 max-w-3xl flex-col items-center justify-center px-4 py-10 text-center sm:px-6">
               <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground">
-                <Sparkles className="size-4" />
+                <Sparkle className={iconClass("sm")} weight="light" />
               </div>
               <p className="text-sm font-semibold">Ask the coach anything</p>
               <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
@@ -128,7 +129,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
               ))}
               {chat.isStreaming ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  <CircleNotch className={cn(iconClass("sm"), "animate-spin")} weight="light" aria-hidden />
                   Coach is thinking…
                 </div>
               ) : null}
@@ -148,7 +149,7 @@ export function CoachChat({ context, className }: CoachChatProps) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-border/60 bg-muted/10 px-4 py-3 sm:px-6">
+        <div className="shrink-0 border-t border-white/10 bg-white/[0.02] px-4 py-3 sm:px-6">
           <div className="mx-auto w-full max-w-3xl">
             <CoachChatInput
               value={input}

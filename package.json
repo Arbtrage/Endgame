@@ -37,6 +37,7 @@
     "@ai-sdk/react": "^4.0.47",
     "@base-ui/react": "^1.6.0",
     "@google/generative-ai": "^0.24.1",
+    "@phosphor-icons/react": "^2.1.10",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@react-three/drei": "^10.7.7",

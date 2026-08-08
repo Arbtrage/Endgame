@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import { Sparkles } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import { EmptyState } from "@/shared/components/empty-state";
 import {
   FeatureHero,
@@ -8,7 +8,7 @@ import {
 } from "@/shared/components/feature-page";
 
 type PlaceholderPageProps = {
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   title: string;
   description: string;
   emptyTitle: string;
@@ -16,7 +16,7 @@ type PlaceholderPageProps = {
 };
 
 export function PlaceholderPage({
-  icon: Icon = Sparkles,
+  icon: Icon = Sparkle,
   title,
   description,
   emptyTitle,

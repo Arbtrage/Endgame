@@ -9,7 +9,7 @@ import { MarketingShell } from "@/shared/components/marketing-shell";
 
 export function LandingPageContent() {
   return (
-    <MarketingShell overlay>
+    <MarketingShell>
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />

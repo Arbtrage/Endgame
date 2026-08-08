@@ -1,105 +1,96 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BarChart3, GraduationCap, Sparkles } from "lucide-react";
+import {
+  ChartLineUp,
+  GraduationCap,
+  Sparkle,
+} from "@phosphor-icons/react";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { BentoCell, BentoGrid } from "@/shared/components/bento-grid";
+import { Eyebrow } from "@/shared/components/eyebrow";
+import { Reveal, RevealItem, RevealStagger } from "@/shared/components/reveal";
+import { iconClass } from "@/shared/components/icon";
 
 const features = [
   {
     icon: GraduationCap,
     title: "Coach mode",
     description:
-      "Stockfish finds the truth. Your AI coach explains the why — in plain language, move by move.",
-    align: "left" as const,
+      "Stockfish finds the truth. Your AI coach explains the why — move by move.",
+    span: 8 as const,
+    tall: true,
   },
   {
-    icon: BarChart3,
+    icon: ChartLineUp,
     title: "Post-game analysis",
-    description:
-      "Accuracy scores, eval graphs, and move classifications turn finished games into actionable feedback.",
-    align: "right" as const,
+    description: "Accuracy, eval graphs, and move classifications.",
+    span: 4 as const,
+    tall: false,
   },
   {
-    icon: Sparkles,
+    icon: Sparkle,
     title: "Personalized training",
-    description:
-      "Lessons generated from your weaknesses — puzzles with hints, not generic drills.",
-    align: "left" as const,
+    description: "Lessons from your weaknesses — puzzles with hints.",
+    span: 12 as const,
+    tall: false,
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="border-t border-border/60 bg-background py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="max-w-2xl">
-          <p className="text-sm font-medium text-primary">How Endgame helps</p>
-          <h2 className="mt-2 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            A full learning loop, not just a chess board
+    <section className="py-24 md:py-32">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <Reveal className="mb-12 max-w-2xl md:mb-16">
+          <Eyebrow className="mb-4">Platform</Eyebrow>
+          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            A full learning loop, not just a board
           </h2>
-          <p className="mt-4 max-w-prose text-pretty text-muted-foreground">
-            Most chess apps stop at the game. Endgame connects play, coaching,
-            analysis, and training into one workflow.
+          <p className="mt-4 text-pretty text-muted-foreground">
+            Play, coach, analyze, and train in one coherent workflow.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-16 space-y-20">
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
-            const reversed = feature.align === "right";
-
-            return (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                className={`grid items-center gap-10 lg:grid-cols-2 ${
-                  reversed ? "lg:[&>*:first-child]:order-2" : ""
-                }`}
-              >
-                <div className="space-y-4">
-                  <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-5" aria-hidden />
-                  </div>
-                  <h3 className="text-2xl font-semibold tracking-tight">
-                    {feature.title}
-                  </h3>
-                  <p className="max-w-prose text-pretty leading-relaxed text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
-                <div className="surface-grain relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/50 bg-muted/20 shadow-elevated">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,oklch(0.62_0.14_145_/_0.12),transparent_60%)]" />
-                  <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-px p-6 opacity-30">
-                    {Array.from({ length: 64 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={
-                          (Math.floor(i / 8) + i) % 2 === 0
-                            ? "bg-muted/40"
-                            : "bg-background/20"
-                        }
-                      />
-                    ))}
-                  </div>
-                  <div className="absolute bottom-6 left-6 right-6 rounded-xl border border-border/40 bg-background/70 p-4 backdrop-blur-sm">
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {feature.title}
-                    </p>
-                    <p className="mt-1 text-sm font-medium">
-                      {index === 0
-                        ? "Nf3 develops with tempo and controls e5."
-                        : index === 1
-                          ? "Accuracy 78.4% · 2 blunders · ACPL 42"
-                          : "Weakness: back-rank tactics · 3 exercises ready"}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        <RevealStagger>
+          <BentoGrid>
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <BentoCell
+                  key={feature.title}
+                  span={feature.span}
+                  rowSpan={feature.tall ? 2 : 1}
+                >
+                  <RevealItem>
+                    <BezelCard
+                      padding="lg"
+                      className="h-full"
+                      innerClassName="flex h-full flex-col justify-between"
+                    >
+                      <div>
+                        <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/20">
+                          <Icon className={iconClass("md")} weight="light" />
+                        </div>
+                        <h3 className="font-display text-2xl font-semibold">
+                          {feature.title}
+                        </h3>
+                        <p className="mt-3 max-w-prose text-pretty leading-relaxed text-muted-foreground">
+                          {feature.description}
+                        </p>
+                      </div>
+                      <p className="mt-8 font-mono text-xs text-muted-foreground">
+                        {index === 0
+                          ? "Nf3 · develops with tempo"
+                          : index === 1
+                            ? "78.4% accuracy · 2 blunders"
+                            : "Back-rank tactics · 3 exercises"}
+                      </p>
+                    </BezelCard>
+                  </RevealItem>
+                </BentoCell>
+              );
+            })}
+          </BentoGrid>
+        </RevealStagger>
       </div>
     </section>
   );

@@ -5,14 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { signUp } from "@/shared/auth/auth-client";
-import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
@@ -33,11 +27,7 @@ export function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -51,14 +41,7 @@ export function SignUpForm() {
     if (nextErrors.name || nextErrors.email || nextErrors.password) return;
 
     setLoading(true);
-
-    const result = await signUp.email({
-      email,
-      password,
-      name,
-      callbackURL: "/dashboard",
-    });
-
+    const result = await signUp.email({ email, password, name, callbackURL: "/dashboard" });
     setLoading(false);
 
     if (result.error) {
@@ -71,61 +54,37 @@ export function SignUpForm() {
   }
 
   return (
-    <Card className="border-border/50 shadow-elevated">
-      <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>
-          Free to start. Your first coach session takes under a minute to set up.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <Field>
-            <FieldLabel htmlFor="name">Display name</FieldLabel>
-            <Input
-              id="name"
-              autoComplete="name"
-              aria-invalid={Boolean(errors.name)}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-            <FieldError>{errors.name}</FieldError>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={Boolean(errors.email)}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            <FieldError>{errors.email}</FieldError>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={Boolean(errors.password)}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-            <FieldError>{errors.password}</FieldError>
-          </Field>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating account..." : "Create account"}
-          </Button>
-        </form>
-        <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/auth/sign-in" className="text-primary hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+    <BezelCard padding="lg">
+      <h2 className="font-display text-2xl font-bold">Create account</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Free to start. First coach session in under a minute.
+      </p>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+        <Field>
+          <FieldLabel htmlFor="name">Display name</FieldLabel>
+          <Input id="name" autoComplete="name" aria-invalid={Boolean(errors.name)} value={name} onChange={(e) => setName(e.target.value)} />
+          <FieldError>{errors.name}</FieldError>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input id="email" type="email" autoComplete="email" aria-invalid={Boolean(errors.email)} value={email} onChange={(e) => setEmail(e.target.value)} />
+          <FieldError>{errors.email}</FieldError>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input id="password" type="password" autoComplete="new-password" aria-invalid={Boolean(errors.password)} value={password} onChange={(e) => setPassword(e.target.value)} />
+          <FieldError>{errors.password}</FieldError>
+        </Field>
+        <PillButton type="submit" disabled={loading} className="w-full justify-center">
+          {loading ? "Creating account..." : "Create account"}
+        </PillButton>
+      </form>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link href="/auth/sign-in" className="text-primary hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </BezelCard>
   );
 }

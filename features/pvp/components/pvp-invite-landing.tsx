@@ -10,7 +10,9 @@ import {
   getPvpInviteByToken,
 } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
-import { Button } from "@/shared/ui/button";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { Eyebrow } from "@/shared/components/eyebrow";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export function PvpInviteLanding({ token }: { token: string }) {
@@ -43,25 +45,23 @@ export function PvpInviteLanding({ token }: { token: string }) {
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-md space-y-4 py-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-8 w-48 rounded-2xl" />
+        <Skeleton className="h-48 w-full rounded-[2rem]" />
       </div>
     );
   }
 
   if (error || !invite) {
     return (
-      <div className="mx-auto w-full max-w-md py-2 text-center">
+      <BezelCard padding="lg" className="mx-auto w-full max-w-md text-center">
         <p className="text-sm text-destructive">Invite not found or expired.</p>
-        <Button
-          render={<Link href="/play/pvp" />}
-          nativeButton={false}
-          variant="outline"
-          className="mt-4"
+        <Link
+          href="/play/pvp"
+          className="mt-4 inline-block text-sm text-primary hover:underline"
         >
-          View invites
-        </Button>
-      </div>
+          View invites →
+        </Link>
+      </BezelCard>
     );
   }
 
@@ -69,31 +69,32 @@ export function PvpInviteLanding({ token }: { token: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-6">
-      <div className="space-y-6 rounded-xl border border-border/60 bg-card/40 p-5 sm:p-6">
-        <div>
-          <h1 className="text-xl font-semibold">Chess challenge</h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {inviterLabel} invited you to a game. Accept to start playing live.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Button
-            className="w-full sm:flex-1"
+      <BezelCard padding="lg">
+        <Eyebrow>Challenge</Eyebrow>
+        <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">
+          Chess challenge
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {inviterLabel} invited you to a game. Accept to start playing live.
+        </p>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <PillButton
+            className="flex-1 justify-center"
             disabled={acceptMutation.isPending}
             onClick={() => acceptMutation.mutate()}
           >
             Accept & play
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full sm:flex-1"
+          </PillButton>
+          <button
+            type="button"
             disabled={declineMutation.isPending}
             onClick={() => declineMutation.mutate()}
+            className="flex flex-1 items-center justify-center rounded-full border border-white/10 px-6 py-3 text-sm font-medium transition-spring hover:bg-white/[0.06]"
           >
             Decline
-          </Button>
+          </button>
         </div>
-      </div>
+      </BezelCard>
     </div>
   );
 }

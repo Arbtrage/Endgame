@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { CircleNotch, GraduationCap } from "@phosphor-icons/react";
 import { LessonCard } from "@/features/training/components/lesson-card";
 import { TopicFilter } from "@/features/training/components/topic-filter";
 import {
@@ -55,7 +55,6 @@ export function TrainingHub() {
   return (
     <FeaturePage>
       <FeatureHero
-        variant="compact"
         icon={GraduationCap}
         title="Train"
         description="Lessons built from your weaknesses — puzzles with hints, not generic drills."
@@ -89,7 +88,7 @@ export function TrainingHub() {
                 >
                   {generateMutation.isPending ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <CircleNotch className="size-4 animate-spin" weight="light" />
                       Generating lesson…
                     </>
                   ) : (

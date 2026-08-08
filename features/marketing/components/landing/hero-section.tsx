@@ -4,71 +4,46 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { SplineScene } from "@/features/marketing/components/landing/spline-scene";
 import { APP_TAGLINE } from "@/shared/constants/brand";
-
-const fadeUp = {
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-};
+import { Eyebrow } from "@/shared/components/eyebrow";
+import { PillCta } from "@/shared/components/pill-cta";
+import { Reveal } from "@/shared/components/reveal";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-dvh overflow-hidden bg-[#08080c] text-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.08),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(34,197,94,0.04),transparent_50%)]" />
-
+    <section className="relative min-h-[100dvh] overflow-hidden">
       <div className="absolute inset-0">
         <SplineScene />
       </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/40" />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(5,5,8,0.85)_100%)]" />
-
-      <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col justify-end px-6 pb-16 pt-28 sm:pb-20 sm:pt-32">
-        <div className="max-w-xl">
-          <motion.div
-            {...fadeUp}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
-          >
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
-              <span className="relative inline-flex size-2 rounded-full bg-primary" />
-            </span>
-            AI coach online
-          </motion.div>
-          <motion.h1
-            {...fadeUp}
-            transition={{ duration: 0.45, delay: 0.15 }}
-            className="mt-4 text-balance text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
-          >
+      <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl items-end gap-10 px-4 pb-20 pt-32 md:grid-cols-2 md:items-center md:px-8 md:pb-24 md:pt-36">
+        <Reveal className="pointer-events-auto max-w-xl">
+          <Eyebrow className="mb-6">AI coach online</Eyebrow>
+          <h1 className="font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
             {APP_TAGLINE}
-          </motion.h1>
-          <motion.p
-            {...fadeUp}
-            transition={{ duration: 0.45, delay: 0.2 }}
-            className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base"
-          >
+          </h1>
+          <p className="mt-6 max-w-md text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
             Play against AI personalities, get coached in real time, and turn
             every game into a lesson you can review.
-          </motion.p>
-          <motion.div
-            {...fadeUp}
-            transition={{ duration: 0.45, delay: 0.25 }}
-            className="mt-8 flex flex-wrap items-center gap-4"
-          >
-            <Link
-              href="/auth/sign-up"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98]"
-            >
-              Start playing
-            </Link>
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <PillCta href="/auth/sign-up">Start playing</PillCta>
             <Link
               href="/demo"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm font-medium text-muted-foreground transition-spring hover:text-foreground"
             >
               Try the demo →
             </Link>
-          </motion.div>
-        </div>
+          </div>
+        </Reveal>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
+          className="pointer-events-none hidden md:block"
+        />
       </div>
     </section>
   );

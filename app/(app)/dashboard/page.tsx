@@ -9,11 +9,9 @@ import { ActiveLessonsWidget } from "@/features/dashboard/components/active-less
 import { WeeklyReportCard } from "@/features/dashboard/components/weekly-report-card";
 import { getProfile } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
-import { PageHeader } from "@/shared/components/page-header";
-import {
-  ViewportPage,
-  ViewportPageSection,
-} from "@/shared/components/viewport-page";
+import { BentoCell, BentoGrid } from "@/shared/components/bento-grid";
+import { BezelCard } from "@/shared/components/bezel-card";
+import { FeatureSection } from "@/shared/components/feature-page";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function DashboardPage() {
@@ -26,46 +24,39 @@ export default function DashboardPage() {
   const showOnboarding = profile && !profile.onboardingComplete;
 
   return (
-    <ViewportPage className="gap-4 lg:gap-5">
-      <ViewportPageSection>
-        <DashboardHero />
-      </ViewportPageSection>
-
-      <ViewportPageSection className="space-y-3">
-        <WeeklyReportCard />
-        <ActiveLessonsWidget />
-      </ViewportPageSection>
-
-      <ViewportPageSection>
-        <div className="space-y-3">
-          <PageHeader
-            size="section"
-            title="Play"
-            description="Jump into a new match or open a recent game to replay it."
-            className="mb-0 gap-0 border-0 pb-2"
-          />
-          <QuickActions />
-        </div>
-      </ViewportPageSection>
-
-      <ViewportPageSection scrollable fill className="flex min-h-0 flex-col">
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
-          <PageHeader
-            size="section"
-            title="Recent games"
-            description="Finished games open directly in replay mode."
-            className="mb-0 shrink-0 gap-0 border-0 pb-0"
-          />
-          <RecentGames />
-        </div>
-      </ViewportPageSection>
+    <>
+      <BentoGrid className="gap-5">
+        <BentoCell span={8} rowSpan={2}>
+          <DashboardHero />
+        </BentoCell>
+        <BentoCell span={4}>
+          <WeeklyReportCard />
+        </BentoCell>
+        <BentoCell span={4}>
+          <ActiveLessonsWidget />
+        </BentoCell>
+        <BentoCell span={5}>
+          <BezelCard padding="md" className="h-full">
+            <FeatureSection title="Quick start" description="Pick a mode">
+              <QuickActions />
+            </FeatureSection>
+          </BezelCard>
+        </BentoCell>
+        <BentoCell span={7}>
+          <BezelCard padding="md" className="h-full" innerClassName="flex min-h-[280px] flex-col">
+            <FeatureSection title="Recent games" description="Replay or analyze">
+              <RecentGames />
+            </FeatureSection>
+          </BezelCard>
+        </BentoCell>
+      </BentoGrid>
 
       <OnboardingWizard
         open={!!showOnboarding}
-        onComplete={() =>
-          queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
-        }
+        onComplete={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
+        }}
       />
-    </ViewportPage>
+    </>
   );
 }

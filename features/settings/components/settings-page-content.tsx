@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Settings, UserRound, Palette, GraduationCap } from "lucide-react";
+import { Gear, UserCircle, Palette, GraduationCap } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -28,7 +28,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
 
 const SETTINGS_SECTIONS = [
-  { id: "profile", label: "Profile", icon: UserRound },
+  { id: "profile", label: "Profile", icon: UserCircle },
   { id: "board", label: "Board", icon: Palette },
   { id: "coaching", label: "Coaching", icon: GraduationCap },
 ] as const;
@@ -42,7 +42,7 @@ export function SettingsPageContent() {
   return (
     <FeaturePage>
       <FeatureHero
-        icon={Settings}
+        icon={Gear}
         title="Settings"
         description="Manage your profile, board look, and coaching preferences."
       />
