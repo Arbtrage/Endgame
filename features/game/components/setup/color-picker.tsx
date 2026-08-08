@@ -14,9 +14,17 @@ const OPTIONS = [
   { value: "random" as const, label: "Random", hint: "Surprise me" },
 ];
 
+const optionClass = (selected: boolean) =>
+  cn(
+    "w-full rounded-2xl border px-4 py-3 text-left transition-spring",
+    selected
+      ? "border-primary/50 bg-primary/10 ring-1 ring-primary/40"
+      : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]",
+  );
+
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
       {OPTIONS.map((option) => {
         const selected = value === option.value;
         return (
@@ -24,15 +32,12 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={cn(
-              "w-full rounded-xl border px-4 py-3 text-left transition-all",
-              selected
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",
-            )}
+            className={optionClass(selected)}
           >
-            <span className="block font-medium leading-snug">{option.label}</span>
-            <span className="mt-1.5 block text-xs leading-relaxed text-muted-foreground">
+            <span className="block text-sm font-medium leading-snug">
+              {option.label}
+            </span>
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
               {option.hint}
             </span>
           </button>

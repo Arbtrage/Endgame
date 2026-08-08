@@ -10,7 +10,6 @@ import {
   SetupShell,
   SetupSidebar,
   SetupSplitLayout,
-  SetupQuickRow,
 } from "@/features/game/components/setup/setup-layout";
 import { SetupSection } from "@/features/game/components/setup/setup-section";
 import {
@@ -132,18 +131,13 @@ export function GameSetup({ onSuccess }: GameSetupProps = {}) {
         }
       >
         {embedded ? (
-          <>
-            <SetupQuickRow>
-              <SetupSection
-                title="Your color"
-                description="Which side you play."
-              >
-                <ColorPicker value={color} onChange={setColor} />
-              </SetupSection>
-              <SetupSection title="Time control" description="Optional clock.">
-                <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-              </SetupSection>
-            </SetupQuickRow>
+          <div className="space-y-5">
+            <SetupSection title="Your color" description="Which side you play.">
+              <ColorPicker value={color} onChange={setColor} />
+            </SetupSection>
+            <SetupSection title="Time control" description="Optional clock.">
+              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+            </SetupSection>
             <SetupSection
               title="Villain threat level"
               description="How sharp the engine plays."
@@ -155,7 +149,7 @@ export function GameSetup({ onSuccess }: GameSetupProps = {}) {
                 onChange={setStockfishLevel}
               />
             </SetupSection>
-          </>
+          </div>
         ) : (
           <>
             <SetupSection

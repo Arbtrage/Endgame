@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Swords } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ColorPicker } from "@/features/game/components/setup/color-picker";
@@ -16,7 +15,7 @@ import {
 import { createPvpInvite } from "@/shared/api/fetcher";
 import type { UserSearchResult } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
-import { Button } from "@/shared/ui/button";
+import { PillButton } from "@/shared/components/pill-cta";
 
 type PvpChallengeFormProps = {
   onSuccess?: () => void;
@@ -44,18 +43,18 @@ export function PvpChallengeForm({ onSuccess }: PvpChallengeFormProps) {
   const preset = TIME_CONTROL_PRESETS[timeControl];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <SetupSection title="Opponent" description="Search by name or email">
         <UserSearchCombobox value={opponent} onChange={setOpponent} />
       </SetupSection>
-      <SetupSection title="Your color">
+      <SetupSection title="Your color" description="Side you prefer.">
         <ColorPicker value={color} onChange={setColor} />
       </SetupSection>
-      <SetupSection title="Time control">
+      <SetupSection title="Time control" description="Clock for both players.">
         <TimeControlPicker value={timeControl} onChange={setTimeControl} />
       </SetupSection>
-      <Button
-        className="h-11 w-full text-base"
+      <PillButton
+        className="w-full justify-center"
         disabled={!opponent || mutation.isPending}
         onClick={() => {
           if (!opponent) return;
@@ -69,9 +68,8 @@ export function PvpChallengeForm({ onSuccess }: PvpChallengeFormProps) {
           });
         }}
       >
-        <Swords className="mr-2 size-4" />
         {mutation.isPending ? "Sending…" : "Send challenge"}
-      </Button>
+      </PillButton>
     </div>
   );
 }

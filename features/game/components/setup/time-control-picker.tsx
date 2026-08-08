@@ -13,7 +13,7 @@ const PRESETS = Object.keys(TIME_CONTROL_PRESETS) as TimeControlPreset[];
 
 export function TimeControlPicker({ value, onChange }: TimeControlPickerProps) {
   return (
-    <div className="grid grid-cols-1 gap-2">
+    <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
       {PRESETS.map((option) => {
         const selected = value === option;
         const preset = TIME_CONTROL_PRESETS[option];
@@ -23,13 +23,13 @@ export function TimeControlPicker({ value, onChange }: TimeControlPickerProps) {
             type="button"
             onClick={() => onChange(option)}
             className={cn(
-              "w-full rounded-xl border px-4 py-3 text-left transition-all",
+              "w-full rounded-2xl border px-4 py-3 text-left transition-spring",
               selected
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",
+                ? "border-primary/50 bg-primary/10 ring-1 ring-primary/40"
+                : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]",
             )}
           >
-            <span className="font-medium leading-snug">{preset.label}</span>
+            <span className="text-sm font-medium leading-snug">{preset.label}</span>
           </button>
         );
       })}

@@ -19,10 +19,10 @@ export function PersonalityCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "w-full rounded-lg border p-3 text-left transition-colors",
+        "w-full rounded-2xl border p-3 text-left transition-spring sm:p-4",
         selected
-          ? "border-primary bg-primary/5 ring-1 ring-primary"
-          : "border-border hover:border-primary/50 hover:bg-muted/40",
+          ? "border-primary/50 bg-primary/10 ring-1 ring-primary/40"
+          : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]",
       )}
     >
       <div className="text-sm font-medium leading-snug">{personality.name}</div>

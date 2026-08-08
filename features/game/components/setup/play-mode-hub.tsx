@@ -21,15 +21,8 @@ import { BezelCard } from "@/shared/components/bezel-card";
 import { Eyebrow } from "@/shared/components/eyebrow";
 import { iconClass } from "@/shared/components/icon";
 import { PillButton } from "@/shared/components/pill-cta";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
+import { SetupModal } from "@/features/game/components/setup/setup-modal";
 import { GameRowSkeleton } from "@/shared/ui/skeleton";
-import { cn } from "@/shared/lib/utils";
 
 type GameSetupProps = {
   onSuccess?: (gameId: string) => void;
@@ -206,31 +199,14 @@ export function PlayModeHub({ mode }: PlayModeHubProps) {
         </div>
       </BezelCard>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent
-          className={cn(
-            "max-h-[min(92dvh,680px)] max-w-[calc(100%-2rem)] gap-0 border-0 bg-transparent p-0 shadow-none",
-            "sm:max-w-md",
-          )}
-        >
-          <BezelCard
-            padding="lg"
-            className="glass-surface max-h-[min(92dvh,680px)]"
-            innerClassName="flex max-h-[inherit] flex-col overflow-y-auto"
-          >
-            <DialogHeader className="shrink-0 text-left">
-              <Eyebrow>New match</Eyebrow>
-              <DialogTitle className="font-display text-xl tracking-tight">
-                {dialogTitle}
-              </DialogTitle>
-              <DialogDescription>{dialogDescription}</DialogDescription>
-            </DialogHeader>
-            <div className="mt-5 shrink-0">
-              <SetupComponent onSuccess={handleCreated} />
-            </div>
-          </BezelCard>
-        </DialogContent>
-      </Dialog>
+      <SetupModal
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={dialogTitle}
+        description={dialogDescription}
+      >
+        <SetupComponent onSuccess={handleCreated} />
+      </SetupModal>
     </div>
   );
 }

@@ -9,7 +9,6 @@ import { PersonalitySelector } from "@/features/coaching/components/personality-
 import { ColorPicker } from "@/features/game/components/setup/color-picker";
 import {
   SetupCallout,
-  SetupQuickRow,
   SetupShell,
 } from "@/features/game/components/setup/setup-layout";
 import { SetupSection } from "@/features/game/components/setup/setup-section";
@@ -102,15 +101,13 @@ export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
       }
     >
       <div className={embedded ? "space-y-5" : "flex flex-col gap-6 p-5 sm:p-6"}>
-        <SetupQuickRow>
-          <SetupSection title="Your color" description="Side you control.">
-            <ColorPicker value={color} onChange={setColor} />
-          </SetupSection>
+        <SetupSection title="Your color" description="Side you control.">
+          <ColorPicker value={color} onChange={setColor} />
+        </SetupSection>
 
-          <SetupSection title="Time control" description="Optional clock.">
-            <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-          </SetupSection>
-        </SetupQuickRow>
+        <SetupSection title="Time control" description="Optional clock.">
+          <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+        </SetupSection>
 
         {!embedded ? (
           <SetupCallout

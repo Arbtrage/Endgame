@@ -10,7 +10,6 @@ import {
   SetupShell,
   SetupSidebar,
   SetupSplitLayout,
-  SetupQuickRow,
 } from "@/features/game/components/setup/setup-layout";
 import { SetupSection } from "@/features/game/components/setup/setup-section";
 import { COACH_SIDEBAR } from "@/features/game/components/setup/setup-hints";
@@ -124,18 +123,13 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
         }
       >
         {embedded ? (
-          <>
-            <SetupQuickRow>
-              <SetupSection
-                title="Your color"
-                description="Which side you play."
-              >
-                <ColorPicker value={color} onChange={setColor} />
-              </SetupSection>
-              <SetupSection title="Time control" description="Optional clock.">
-                <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-              </SetupSection>
-            </SetupQuickRow>
+          <div className="space-y-5">
+            <SetupSection title="Your color" description="Which side you play.">
+              <ColorPicker value={color} onChange={setColor} />
+            </SetupSection>
+            <SetupSection title="Time control" description="Optional clock.">
+              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+            </SetupSection>
             <SetupSection
               title="Villain threat level"
               description="Start lower if you want room to read coach notes."
@@ -147,7 +141,7 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
                 onChange={setStockfishLevel}
               />
             </SetupSection>
-          </>
+          </div>
         ) : (
           <>
             <SetupSection

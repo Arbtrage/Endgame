@@ -25,14 +25,9 @@ import {
   FeaturePanel,
   FeatureSection,
 } from "@/shared/components/feature-page";
+import { SetupModal } from "@/features/game/components/setup/setup-modal";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Button } from "@/shared/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
 
@@ -350,19 +345,15 @@ export function PvpHub() {
         )}
       </FeaturePanel>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[min(90vh,720px)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
-          <DialogHeader className="border-b px-5 py-4">
-            <DialogTitle>Challenge a friend</DialogTitle>
-            <DialogDescription>
-              Pick an opponent, color preference, and time control.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
-            <PvpChallengeForm onSuccess={() => setDialogOpen(false)} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SetupModal
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        eyebrow="Challenge"
+        title="Challenge a friend"
+        description="Pick an opponent, color preference, and time control."
+      >
+        <PvpChallengeForm onSuccess={() => setDialogOpen(false)} />
+      </SetupModal>
     </FeaturePage>
   );
 }
