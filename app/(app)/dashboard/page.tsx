@@ -25,14 +25,16 @@ export default function DashboardPage() {
 
   return (
     <>
-      <BentoGrid className="gap-5">
-        <BentoCell span={8} rowSpan={2}>
+      <BentoGrid className="gap-5 md:grid-rows-[minmax(0,1fr)_auto]">
+        <BentoCell span={8} rowSpan={2} className="flex min-h-0">
           <DashboardHero />
         </BentoCell>
-        <BentoCell span={4}>
-          <WeeklyReportCard />
-        </BentoCell>
-        <BentoCell span={4}>
+        <BentoCell
+          span={4}
+          rowSpan={2}
+          className="flex min-h-0 flex-col gap-5"
+        >
+          <WeeklyReportCard className="min-h-0 flex-1" />
           <ActiveLessonsWidget />
         </BentoCell>
         <BentoCell span={5}>

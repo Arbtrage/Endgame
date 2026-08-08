@@ -26,7 +26,7 @@ export function DashboardHero() {
   const name = profile?.name ?? session?.user.name ?? "Player";
 
   return (
-    <BezelCard padding="lg" className="h-full">
+    <BezelCard padding="lg" className="h-full w-full">
       <Eyebrow className="mb-4">Today</Eyebrow>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

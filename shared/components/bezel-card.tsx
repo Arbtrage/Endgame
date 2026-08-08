@@ -24,7 +24,7 @@ export function BezelCard({
     <div className={cn("bezel-outer transition-spring", className)}>
       <div
         className={cn(
-          "bezel-inner glass-surface",
+          "bezel-inner glass-surface h-full min-h-0",
           paddingMap[padding],
           innerClassName,
         )}

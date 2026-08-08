@@ -43,7 +43,7 @@ export function BentoCell({
   return (
     <div
       className={cn(
-        "min-w-0",
+        "min-h-0 min-w-0",
         spanMap[span],
         rowSpan === 2 && "md:row-span-2",
         className,
