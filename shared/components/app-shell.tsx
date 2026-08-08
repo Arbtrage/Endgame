@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { PvpInviteNotifications } from "@/features/pvp/components/pvp-invite-notifications";
-import { IslandNav } from "@/shared/components/island-nav";
+import { IslandNav, AppNavSignOutFooter } from "@/shared/components/island-nav";
 import { appNavGroups } from "@/shared/lib/nav-config";
+import { signOut } from "@/shared/auth/auth-client";
 import { cn } from "@/shared/lib/utils";
 
 const PLAY_SETUP_ROUTE = /^\/play\/(computer|ai|coach)$/;
@@ -40,7 +41,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </header>
       ) : (
-        <IslandNav groups={appNavGroups} showCta={false} />
+        <IslandNav
+          groups={appNavGroups}
+          showCta={false}
+          footer={({ close }) => (
+            <AppNavSignOutFooter
+              onSignOut={async () => {
+                close();
+                await signOut();
+              }}
+            />
+          )}
+        />
       )}
 
       <main

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { SignOut } from "@phosphor-icons/react";
 import { APP_NAME } from "@/shared/constants/brand";
 import { NavOverlay } from "@/shared/components/nav-overlay";
+import { iconClass } from "@/shared/components/icon";
+import { useSession } from "@/shared/auth/auth-client";
 import { cn } from "@/shared/lib/utils";
 import type { NavGroup, NavLink } from "@/shared/lib/nav-config";
 
@@ -15,6 +18,7 @@ type IslandNavProps = {
   showCta?: boolean;
   ctaHref?: string;
   ctaLabel?: string;
+  footer?: React.ReactNode | ((helpers: { close: () => void }) => React.ReactNode);
 };
 
 export function IslandNav({
@@ -24,6 +28,7 @@ export function IslandNav({
   showCta = true,
   ctaHref = "/auth/sign-up",
   ctaLabel = "Start playing",
+  footer,
 }: IslandNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -31,6 +36,7 @@ export function IslandNav({
   const activeHref = flatLinks.find(
     (link) => pathname === link.href || pathname.startsWith(`${link.href}/`),
   )?.href;
+  const isAppNav = !!groups && !links;
 
   return (
     <>
@@ -60,7 +66,7 @@ export function IslandNav({
                   "rounded-full px-3 py-1.5 text-xs font-medium transition-spring",
                   pathname === link.href || pathname.startsWith(`${link.href}/`)
                     ? "bg-white/10 text-foreground"
-                    : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                    : "text-muted-foreground hover:bg-white/6 hover:text-foreground",
                 )}
               >
                 {link.label}
@@ -82,7 +88,7 @@ export function IslandNav({
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((value) => !value)}
-              className="relative flex size-10 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10 transition-spring hover:bg-white/10 active:scale-[0.98]"
+              className="relative flex size-10 items-center justify-center rounded-full bg-white/6 ring-1 ring-white/10 transition-spring hover:bg-white/10 active:scale-[0.98]"
             >
               <span
                 className={cn(
@@ -107,7 +113,43 @@ export function IslandNav({
         groups={groups}
         links={links}
         activeHref={activeHref}
+        variant={isAppNav ? "app" : "marketing"}
+        footer={
+          typeof footer === "function"
+            ? footer({ close: () => setOpen(false) })
+            : footer
+        }
       />
     </>
+  );
+}
+
+type AppNavSignOutProps = {
+  onSignOut: () => void | Promise<void>;
+};
+
+export function AppNavSignOutFooter({ onSignOut }: AppNavSignOutProps) {
+  const { data: session } = useSession();
+  const email = session?.user?.email;
+  const name = session?.user?.name;
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="min-w-0 flex-1">
+        {name || email ? (
+          <p className="truncate text-xs text-muted-foreground">
+            {name ?? email}
+          </p>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        onClick={() => void onSignOut()}
+        className="inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-foreground transition-spring hover:bg-white/6"
+      >
+        <SignOut className={iconClass("sm")} weight="light" />
+        Sign out
+      </button>
+    </div>
   );
 }
