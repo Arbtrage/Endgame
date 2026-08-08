@@ -8,16 +8,20 @@ import { IslandNav } from "@/shared/components/island-nav";
 import { appNavGroups } from "@/shared/lib/nav-config";
 import { cn } from "@/shared/lib/utils";
 
+const PLAY_SETUP_ROUTE = /^\/play\/(computer|ai|coach)$/;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPlayRoute = pathname?.startsWith("/play") ?? false;
   const isActiveGame = /^\/play\/[^/]+$/.test(pathname ?? "");
+  const isPlaySetup = PLAY_SETUP_ROUTE.test(pathname ?? "");
+  const isViewportLocked = isActiveGame || isPlaySetup;
 
   return (
     <div
       className={cn(
         "relative flex flex-col bg-background",
-        isActiveGame ? "h-dvh overflow-hidden" : "min-h-dvh",
+        isViewportLocked ? "h-dvh overflow-hidden" : "min-h-dvh",
       )}
     >
       <a href="#main-content" className="skip-link">
@@ -43,12 +47,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         id="main-content"
         className={cn(
           "relative z-10 mx-auto flex w-full max-w-7xl flex-col",
+          isViewportLocked
+            ? "min-h-0 flex-1 overflow-hidden"
+            : undefined,
           isActiveGame
-            ? "min-h-0 flex-1 px-2 py-2 pt-16 sm:px-4"
-            : cn(
-                "px-4 pb-16 pt-28 md:px-8 md:pb-24",
-                isPlayRoute ? "md:pt-24" : "md:pt-32",
-              ),
+            ? "px-2 py-2 pt-16 sm:px-4"
+            : isPlaySetup
+              ? "px-4 pb-4 pt-24 md:px-6 md:pt-24"
+              : cn(
+                  "px-4 pb-16 pt-28 md:px-8 md:pb-24",
+                  isPlayRoute ? "md:pt-24" : "md:pt-32",
+                ),
         )}
       >
         {children}

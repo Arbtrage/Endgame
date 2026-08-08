@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { GraduationCap, Swords } from "lucide-react";
+import { GraduationCap, Sword } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   SetupShell,
   SetupSidebar,
   SetupSplitLayout,
+  SetupQuickRow,
 } from "@/features/game/components/setup/setup-layout";
 import { SetupSection } from "@/features/game/components/setup/setup-section";
 import { COACH_SIDEBAR } from "@/features/game/components/setup/setup-hints";
@@ -22,6 +23,7 @@ import {
 } from "@/features/game/types";
 import { createGame, getSettings } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Button } from "@/shared/ui/button";
 
 type CoachGameSetupProps = {
@@ -62,28 +64,52 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
     <SetupShell
       embedded={embedded}
       footer={
-        <Button
-          className="h-11 w-full text-base"
-          disabled={mutation.isPending}
-          onClick={() =>
-            mutation.mutate({
-              mode: "COACH",
-              color,
-              stockfishLevel: effectiveStrength,
-              ...(preset.initial !== null
-                ? {
-                    timeControl: {
-                      initial: preset.initial,
-                      increment: preset.increment ?? 0,
-                    },
-                  }
-                : {}),
-            })
-          }
-        >
-          <Swords className="mr-2 size-4" />
-          {mutation.isPending ? "Starting..." : "Start coached game"}
-        </Button>
+        embedded ? (
+          <PillButton
+            className="w-full justify-center"
+            disabled={mutation.isPending}
+            onClick={() =>
+              mutation.mutate({
+                mode: "COACH",
+                color,
+                stockfishLevel: effectiveStrength,
+                ...(preset.initial !== null
+                  ? {
+                      timeControl: {
+                        initial: preset.initial,
+                        increment: preset.increment ?? 0,
+                      },
+                    }
+                  : {}),
+              })
+            }
+          >
+            {mutation.isPending ? "Starting..." : "Start coached game"}
+          </PillButton>
+        ) : (
+          <Button
+            className="h-11 w-full text-base"
+            disabled={mutation.isPending}
+            onClick={() =>
+              mutation.mutate({
+                mode: "COACH",
+                color,
+                stockfishLevel: effectiveStrength,
+                ...(preset.initial !== null
+                  ? {
+                      timeControl: {
+                        initial: preset.initial,
+                        increment: preset.increment ?? 0,
+                      },
+                    }
+                  : {}),
+              })
+            }
+          >
+            <Sword className="mr-2 size-4" weight="light" />
+            {mutation.isPending ? "Starting..." : "Start coached game"}
+          </Button>
+        )
       }
     >
       <SetupSplitLayout
@@ -97,31 +123,60 @@ export function CoachGameSetup({ onSuccess }: CoachGameSetupProps = {}) {
           />
         }
       >
-        <SetupSection
-          title="Your color"
-          description="Which side of the board you play."
-        >
-          <ColorPicker value={color} onChange={setColor} />
-        </SetupSection>
+        {embedded ? (
+          <>
+            <SetupQuickRow>
+              <SetupSection
+                title="Your color"
+                description="Which side you play."
+              >
+                <ColorPicker value={color} onChange={setColor} />
+              </SetupSection>
+              <SetupSection title="Time control" description="Optional clock.">
+                <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+              </SetupSection>
+            </SetupQuickRow>
+            <SetupSection
+              title="Villain threat level"
+              description="Start lower if you want room to read coach notes."
+            >
+              <StrengthSlider
+                id="coach-strength"
+                label="Level"
+                value={effectiveStrength}
+                onChange={setStockfishLevel}
+              />
+            </SetupSection>
+          </>
+        ) : (
+          <>
+            <SetupSection
+              title="Your color"
+              description="Which side of the board you play."
+            >
+              <ColorPicker value={color} onChange={setColor} />
+            </SetupSection>
 
-        <SetupSection
-          title="Villain threat level"
-          description="Start lower if you want room to read coach notes."
-        >
-          <StrengthSlider
-            id="coach-strength"
-            label="Level"
-            value={effectiveStrength}
-            onChange={setStockfishLevel}
-          />
-        </SetupSection>
+            <SetupSection
+              title="Villain threat level"
+              description="Start lower if you want room to read coach notes."
+            >
+              <StrengthSlider
+                id="coach-strength"
+                label="Level"
+                value={effectiveStrength}
+                onChange={setStockfishLevel}
+              />
+            </SetupSection>
 
-        <SetupSection
-          title="Time control"
-          description="Unlimited works best while learning."
-        >
-          <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-        </SetupSection>
+            <SetupSection
+              title="Time control"
+              description="Unlimited works best while learning."
+            >
+              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+            </SetupSection>
+          </>
+        )}
       </SetupSplitLayout>
     </SetupShell>
   );

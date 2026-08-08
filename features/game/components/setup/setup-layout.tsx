@@ -1,7 +1,8 @@
-import type { LucideIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import { FeaturePanel } from "@/shared/components/feature-page";
+import { iconClass } from "@/shared/components/icon";
 
 type SetupShellProps = {
   children: ReactNode;
@@ -13,10 +14,10 @@ type SetupShellProps = {
 export function SetupShell({ children, footer, embedded = false }: SetupShellProps) {
   if (embedded) {
     return (
-      <div className="flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card/40">
-        <div className="max-h-[min(60vh,520px)] overflow-y-auto">{children}</div>
+      <div className="flex flex-col">
+        <div className="space-y-5">{children}</div>
         {footer ? (
-          <div className="shrink-0 border-t border-border/60 bg-muted/20 p-4">
+          <div className="mt-6 shrink-0 border-t border-white/10 pt-4">
             {footer}
           </div>
         ) : null}
@@ -37,25 +38,19 @@ type SetupSplitLayoutProps = {
   embedded?: boolean;
 };
 
-/** Sidebar + form — used by Villain and Coach modes. */
+/** Sidebar + form — used by Villain and Coach modes on full-page setup. */
 export function SetupSplitLayout({
   sidebar,
   children,
   embedded = false,
 }: SetupSplitLayoutProps) {
+  if (embedded) {
+    return <div className="space-y-5">{children}</div>;
+  }
+
   return (
-    <div
-      className={cn(
-        "flex min-h-0 flex-col",
-        !embedded && "lg:flex-row",
-      )}
-    >
-      <aside
-        className={cn(
-          "shrink-0 border-b border-border/60 bg-muted/15 p-5",
-          !embedded && "lg:w-72 lg:border-b-0 lg:border-r xl:w-80",
-        )}
-      >
+    <div className="flex min-h-0 flex-col lg:flex-row">
+      <aside className="shrink-0 border-b border-white/10 bg-white/[0.02] p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80">
         {sidebar}
       </aside>
       <div className="flex min-h-0 flex-1 flex-col gap-6 p-5 sm:p-6">{children}</div>
@@ -64,7 +59,7 @@ export function SetupSplitLayout({
 }
 
 type SetupSidebarProps = {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   title: string;
   description: string;
   badges?: string[];
@@ -81,12 +76,14 @@ export function SetupSidebar({
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-4" aria-hidden />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
+          <Icon className={iconClass("sm")} weight="light" aria-hidden />
         </div>
         <div className="space-y-1.5">
           <h2 className="text-sm font-semibold leading-snug">{title}</h2>
-          <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {description}
+          </p>
         </div>
       </div>
 
@@ -95,7 +92,7 @@ export function SetupSidebar({
           {badges.map((name) => (
             <span
               key={name}
-              className="rounded-md border border-border/60 bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground"
+              className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[11px] text-muted-foreground"
             >
               {name}
             </span>
@@ -103,9 +100,12 @@ export function SetupSidebar({
         </div>
       ) : null}
 
-      <ul className="space-y-2.5 border-t border-border/50 pt-4">
+      <ul className="space-y-2.5 border-t border-white/10 pt-4">
         {tips.map((tip) => (
-          <li key={tip} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+          <li
+            key={tip}
+            className="flex gap-2 text-xs leading-relaxed text-muted-foreground"
+          >
             <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
             <span>{tip}</span>
           </li>
@@ -116,7 +116,7 @@ export function SetupSidebar({
 }
 
 type SetupCalloutProps = {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   title: string;
   body: string;
   badges?: string[];
@@ -134,12 +134,12 @@ export function SetupCallout({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border/60 bg-muted/20 px-4 py-3.5 sm:px-5",
+        "rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 sm:px-5",
         className,
       )}
     >
       <div className="flex gap-3">
-        <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+        <Icon className={cn(iconClass("sm"), "mt-0.5 shrink-0")} weight="light" />
         <div className="min-w-0 space-y-2">
           <div className="space-y-1">
             <p className="text-sm font-medium leading-snug">{title}</p>
@@ -150,7 +150,7 @@ export function SetupCallout({
               {badges.map((name) => (
                 <span
                   key={name}
-                  className="rounded-md border border-border/60 bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground"
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[11px] text-muted-foreground"
                 >
                   {name}
                 </span>
@@ -169,7 +169,5 @@ type SetupQuickRowProps = {
 
 /** Side-by-side compact options (color + time). */
 export function SetupQuickRow({ children }: SetupQuickRowProps) {
-  return (
-    <div className="grid gap-6 sm:grid-cols-2">{children}</div>
-  );
+  return <div className="grid gap-5 sm:grid-cols-2">{children}</div>;
 }

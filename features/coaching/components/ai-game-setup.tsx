@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Swords } from "lucide-react";
+import { Sword } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
 } from "@/features/game/types";
 import { createGame, getSettings } from "@/shared/api/fetcher";
 import { queryKeys } from "@/shared/api/query-keys";
+import { PillButton } from "@/shared/components/pill-cta";
 import { Button } from "@/shared/ui/button";
 
 type AiGameSetupProps = {
@@ -61,67 +62,72 @@ export function AiGameSetup({ onSuccess }: AiGameSetupProps = {}) {
   const preset = TIME_CONTROL_PRESETS[timeControl];
   const embedded = Boolean(onSuccess);
 
+  const startMatch = () =>
+    mutation.mutate({
+      mode: "AI_OPPONENT",
+      color,
+      aiPersonality: effectivePersonality,
+      ...(preset.initial !== null
+        ? {
+            timeControl: {
+              initial: preset.initial,
+              increment: preset.increment ?? 0,
+            },
+          }
+        : {}),
+    });
+
   return (
     <SetupShell
       embedded={embedded}
       footer={
-        <Button
-          className="h-11 w-full text-base"
-          disabled={mutation.isPending}
-          onClick={() =>
-            mutation.mutate({
-              mode: "AI_OPPONENT",
-              color,
-              aiPersonality: effectivePersonality,
-              ...(preset.initial !== null
-                ? {
-                    timeControl: {
-                      initial: preset.initial,
-                      increment: preset.increment ?? 0,
-                    },
-                  }
-                : {}),
-            })
-          }
-        >
-          <Swords className="mr-2 size-4" />
-          {mutation.isPending ? "Summoning hero..." : "Start hero match"}
-        </Button>
+        embedded ? (
+          <PillButton
+            className="w-full justify-center"
+            disabled={mutation.isPending}
+            onClick={startMatch}
+          >
+            {mutation.isPending ? "Summoning hero..." : "Start hero match"}
+          </PillButton>
+        ) : (
+          <Button
+            className="h-11 w-full text-base"
+            disabled={mutation.isPending}
+            onClick={startMatch}
+          >
+            <Sword className="mr-2 size-4" weight="light" />
+            {mutation.isPending ? "Summoning hero..." : "Start hero match"}
+          </Button>
+        )
       }
     >
-      <div className="flex flex-col gap-6 p-5 sm:p-6">
-        {embedded ? (
-          <>
-            <SetupSection title="Your color" description="Side you control.">
-              <ColorPicker value={color} onChange={setColor} />
-            </SetupSection>
+      <div className={embedded ? "space-y-5" : "flex flex-col gap-6 p-5 sm:p-6"}>
+        <SetupQuickRow>
+          <SetupSection title="Your color" description="Side you control.">
+            <ColorPicker value={color} onChange={setColor} />
+          </SetupSection>
 
-            <SetupSection title="Time control" description="Optional clock.">
-              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-            </SetupSection>
-          </>
-        ) : (
-          <SetupQuickRow>
-            <SetupSection title="Your color" description="Side you control.">
-              <ColorPicker value={color} onChange={setColor} />
-            </SetupSection>
+          <SetupSection title="Time control" description="Optional clock.">
+            <TimeControlPicker value={timeControl} onChange={setTimeControl} />
+          </SetupSection>
+        </SetupQuickRow>
 
-            <SetupSection title="Time control" description="Optional clock.">
-              <TimeControlPicker value={timeControl} onChange={setTimeControl} />
-            </SetupSection>
-          </SetupQuickRow>
-        )}
-
-        <SetupCallout
-          icon={HERO_CALLOUT.icon}
-          title={HERO_CALLOUT.title}
-          body={HERO_CALLOUT.body}
-          badges={[...SAMPLE_HEROES]}
-        />
+        {!embedded ? (
+          <SetupCallout
+            icon={HERO_CALLOUT.icon}
+            title={HERO_CALLOUT.title}
+            body={HERO_CALLOUT.body}
+            badges={[...SAMPLE_HEROES]}
+          />
+        ) : null}
 
         <SetupSection
           title="Playing style"
-          description="Difficulty and personality — pick how your hero approaches the game."
+          description={
+            embedded
+              ? "Difficulty and personality."
+              : "Difficulty and personality — pick how your hero approaches the game."
+          }
         >
           <PersonalitySelector
             value={effectivePersonality}

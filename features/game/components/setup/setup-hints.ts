@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Sparkle } from "@phosphor-icons/react";
 
 export const SAMPLE_VILLAINS = [
   "Thanos",
@@ -32,7 +32,7 @@ export const VILLAIN_SIDEBAR = {
 export const HERO_CALLOUT = {
   title: "Your hero is chosen at match start",
   body: "Iron Man, Spider-Man, Captain Marvel, and others rotate in randomly. Playing style sets how they play — not their name.",
-  icon: Sparkles,
+  icon: Sparkle,
 } as const;
 
 export const COACH_SIDEBAR = {
