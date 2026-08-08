@@ -15,7 +15,6 @@ import {
   triggerMoveMade,
 } from "@/server/realtime/pusher";
 import { gameMessageRepository } from "@/server/repositories/game-message.repository";
-import { scheduleBackgroundAnalysisForGame } from "@/server/analysis/schedule-background-analysis";
 
 function mapGame(
   game: NonNullable<Awaited<ReturnType<typeof gameRepository.findById>>>,
@@ -326,8 +325,6 @@ export const gameService = {
       });
     }
 
-    void scheduleBackgroundAnalysisForGame(gameId);
-
     return mapGame(
       { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },
       userId,
@@ -367,8 +364,6 @@ export const gameService = {
         finalFen: game.finalFen,
       });
     }
-
-    void scheduleBackgroundAnalysisForGame(gameId);
 
     return mapGame(
       { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },
@@ -429,8 +424,6 @@ export const gameService = {
       resultReason: "agreement",
       finalFen: updated.finalFen,
     });
-
-    void scheduleBackgroundAnalysisForGame(gameId);
 
     return mapGame(
       { ...updated, moves: game.moves, whiteUser: game.whiteUser, blackUser: game.blackUser },

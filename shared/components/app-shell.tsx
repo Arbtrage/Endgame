@@ -42,9 +42,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main
         id="main-content"
         className={cn(
-          "relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col",
+          "relative z-10 mx-auto flex w-full max-w-7xl flex-col",
           isActiveGame
-            ? "min-h-[100dvh] px-2 py-2 pt-16 sm:px-4"
+            ? "min-h-0 flex-1 px-2 py-2 pt-16 sm:px-4"
             : cn(
                 "px-4 pb-16 pt-28 md:px-8 md:pb-24",
                 isPlayRoute ? "md:pt-24" : "md:pt-32",

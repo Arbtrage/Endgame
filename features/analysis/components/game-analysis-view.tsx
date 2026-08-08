@@ -15,9 +15,6 @@ import {
   analyzeGame,
   type AnalysisMode,
 } from "@/features/analysis/engine/analysis-engine";
-import {
-  useBackgroundAnalysisStatus,
-} from "@/features/analysis/hooks/use-background-analysis-status";
 import type { AnalysisResult, AnalyzedMove, AnalysisProgress } from "@/features/analysis/types";
 import {
   explainMove,
@@ -73,7 +70,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
   const [explanation, setExplanation] = useState<string | null>(null);
   const [explaining, setExplaining] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const bgStatus = useBackgroundAnalysisStatus(gameId);
+  const autoRunStartedRef = useRef(false);
 
   const { data: game, isLoading: gameLoading } = useQuery({
     queryKey: queryKeys.games.detail(gameId),
@@ -84,17 +81,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
     queryKey: queryKeys.analysis.detail(gameId),
     queryFn: () => getAnalysis(gameId),
     enabled: !!game,
-    refetchInterval:
-      bgStatus === "running" || bgStatus === "queued" ? 3000 : false,
   });
-
-  useEffect(() => {
-    if (bgStatus === "done") {
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.analysis.detail(gameId),
-      });
-    }
-  }, [bgStatus, gameId, queryClient]);
 
   const runAnalysis = useCallback(
     async (mode: AnalysisMode) => {
@@ -155,6 +142,30 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
     }
   }, [storedAnalysis]);
 
+  useEffect(() => {
+    if (
+      autoRunStartedRef.current ||
+      !game ||
+      game.status !== "COMPLETED" ||
+      storedAnalysis ||
+      analysisLoading ||
+      analysis ||
+      analyzing
+    ) {
+      return;
+    }
+
+    autoRunStartedRef.current = true;
+    void runAnalysis("standard");
+  }, [
+    analysis,
+    analysisLoading,
+    analyzing,
+    game,
+    runAnalysis,
+    storedAnalysis,
+  ]);
+
   const selectedMove = analysis?.moveAnalysis.find(
     (m) => m.moveNumber === selectedMoveNumber,
   );
@@ -164,8 +175,6 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
     game?.moves[game.moves.length - 1]?.fen ??
     game?.finalFen ??
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-  const backgroundActive = bgStatus === "running" || bgStatus === "queued";
 
   async function handleExplain() {
     if (!selectedMove || !game) return;
@@ -239,7 +248,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={analyzing || backgroundActive}
+            disabled={analyzing}
             onClick={() => setReanalyzeOpen(true)}
           >
             <RefreshCw className="size-4" />
@@ -248,21 +257,10 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
         ) : null}
       </div>
 
-      {(analyzing && progress) || backgroundActive ? (
+      {analyzing && progress ? (
         <AnalysisProgressBar
-          progress={
-            progress ?? {
-              current: 0,
-              total: game.moves.length,
-              phase: "analyzing",
-              message: backgroundActive
-                ? "Analyzing in background…"
-                : undefined,
-            }
-          }
-          onCancel={
-            analyzing ? () => abortRef.current?.abort() : undefined
-          }
+          progress={progress}
+          onCancel={() => abortRef.current?.abort()}
         />
       ) : null}
 
@@ -310,7 +308,7 @@ export function GameAnalysisView({ gameId }: GameAnalysisViewProps) {
             </div>
           </div>
         </div>
-      ) : !analyzing && !backgroundActive ? (
+      ) : !analyzing ? (
         <div className="rounded-xl border border-border/60 p-6 text-center">
           <p className="text-sm text-muted-foreground">
             No analysis available for this game.

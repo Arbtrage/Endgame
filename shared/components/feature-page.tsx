@@ -1,6 +1,6 @@
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
-import { BezelPanel } from "@/shared/components/bezel-card";
+import { BezelCard } from "@/shared/components/bezel-card";
 import { Eyebrow } from "@/shared/components/eyebrow";
 import { cn } from "@/shared/lib/utils";
 import { iconClass } from "@/shared/components/icon";
@@ -66,7 +66,6 @@ type FeaturePanelProps = {
   footer?: ReactNode;
   className?: string;
   bodyClassName?: string;
-  scrollable?: boolean;
 };
 
 export function FeaturePanel({
@@ -74,20 +73,14 @@ export function FeaturePanel({
   footer,
   className,
   bodyClassName,
-  scrollable = true,
 }: FeaturePanelProps) {
   return (
-    <BezelPanel
-      className={className}
-      padding="md"
-      scrollable={scrollable}
-      innerClassName={bodyClassName}
-    >
+    <BezelCard padding="md" className={className} innerClassName={bodyClassName}>
       {children}
       {footer ? (
         <div className="mt-6 border-t border-white/10 pt-4">{footer}</div>
       ) : null}
-    </BezelPanel>
+    </BezelCard>
   );
 }
 
